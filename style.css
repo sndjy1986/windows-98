@@ -1,0 +1,411 @@
+/* ===== RESET & BASE STYLES ===== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'MS Sans Serif', sans-serif;
+    font-size: 11px;
+    background: linear-gradient(45deg, #008080 0%, #004040 100%);
+    height: 100vh;
+    overflow: hidden;
+    cursor: default;
+    user-select: none;
+}
+
+/* ===== DESKTOP ===== */
+.desktop {
+    position: relative;
+    width: 100vw;
+    height: calc(100vh - 30px);
+    padding: 10px;
+}
+
+/* ===== DESKTOP ICONS ===== */
+.desktop-icon {
+    position: absolute;
+    width: 64px;
+    height: 70px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    cursor: pointer;
+    padding: 2px;
+    border-radius: 2px;
+    transition: background-color 0.1s;
+}
+
+.desktop-icon:hover {
+    background-color: rgba(0, 0, 255, 0.1);
+}
+
+.desktop-icon.selected {
+    background-color: rgba(0, 0, 255, 0.3);
+}
+
+.desktop-icon img {
+    width: 32px;
+    height: 32px;
+    margin-bottom: 4px;
+}
+
+.desktop-icon .icon-emoji {
+    font-size: 32px;
+    margin-bottom: 4px;
+    line-height: 32px;
+}
+
+.desktop-icon span {
+    color: white;
+    font-size: 11px;
+    text-align: center;
+    word-wrap: break-word;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+    line-height: 12px;
+    max-width: 60px;
+}
+
+.dragging {
+    opacity: 0.7;
+    z-index: 100;
+}
+
+/* ===== TASKBAR ===== */
+.taskbar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 30px;
+    background: linear-gradient(to bottom, #c0c0c0 0%, #808080 100%);
+    border-top: 1px solid #dfdfdf;
+    border-left: 1px solid #dfdfdf;
+    border-right: 1px solid #404040;
+    border-bottom: 1px solid #404040;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 2px;
+}
+
+.taskbar-left {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.start-button {
+    height: 26px;
+    padding: 0 15px;
+    background: linear-gradient(to bottom, #c0c0c0 0%, #808080 100%);
+    border: 2px outset #c0c0c0;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    font-size: 11px;
+}
+
+.start-button:active {
+    border: 2px inset #c0c0c0;
+}
+
+.running-apps {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+}
+
+.app-button {
+    height: 26px;
+    padding: 0 12px;
+    background: linear-gradient(to bottom, #c0c0c0 0%, #808080 100%);
+    border: 2px outset #c0c0c0;
+    font-size: 11px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    min-width: 120px;
+    max-width: 150px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.app-button:active {
+    border: 2px inset #c0c0c0;
+}
+
+.app-button.active {
+    background: linear-gradient(to bottom, #808080 0%, #c0c0c0 100%);
+    border: 2px inset #c0c0c0;
+}
+
+.system-tray {
+    height: 26px;
+    background: linear-gradient(to bottom, #c0c0c0 0%, #808080 100%);
+    border: 1px inset #c0c0c0;
+    padding: 3px 8px;
+    font-size: 11px;
+    min-width: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* ===== START MENU ===== */
+.start-menu {
+    position: fixed;
+    bottom: 30px;
+    left: 2px;
+    background: #c0c0c0;
+    border: 2px outset #c0c0c0;
+    box-shadow: 2px -2px 5px rgba(0, 0, 0, 0.3);
+    display: none;
+    z-index: 1001;
+    min-width: 180px;
+}
+
+.start-menu-item {
+    padding: 6px 12px;
+    cursor: pointer;
+    font-size: 11px;
+    border-bottom: 1px solid #808080;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.start-menu-item:hover {
+    background: #0080ff;
+    color: white;
+}
+
+.start-menu-item:last-child {
+    border-bottom: none;
+}
+
+/* ===== CONTEXT MENU ===== */
+.context-menu {
+    position: fixed;
+    background: #c0c0c0;
+    border: 2px outset #c0c0c0;
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
+    display: none;
+    z-index: 1001;
+    min-width: 140px;
+}
+
+.context-menu-item {
+    padding: 4px 8px;
+    cursor: pointer;
+    font-size: 11px;
+    border-bottom: 1px solid #808080;
+}
+
+.context-menu-item:hover {
+    background: #0080ff;
+    color: white;
+}
+
+.context-menu-item:last-child {
+    border-bottom: none;
+}
+
+/* ===== MODALS ===== */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background: #c0c0c0;
+    border: 2px outset #c0c0c0;
+    width: 400px;
+    max-width: 90vw;
+    padding: 0;
+}
+
+.weather-modal-content {
+    width: 500px;
+    max-width: 90vw;
+}
+
+.modal-header {
+    background: linear-gradient(90deg, #0080ff, #004080);
+    color: white;
+    padding: 3px 8px;
+    font-weight: bold;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: move;
+}
+
+.modal-close {
+    background: #c0c0c0;
+    border: 1px outset #c0c0c0;
+    width: 18px;
+    height: 16px;
+    font-size: 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: black;
+}
+
+.modal-close:hover {
+    background: #ff4444;
+    color: white;
+}
+
+.modal-body {
+    padding: 15px;
+}
+
+/* ===== WEATHER APP STYLES ===== */
+.weather-app {
+    padding: 0;
+}
+
+.current-weather {
+    text-align: center;
+    padding: 20px;
+    border-bottom: 1px solid #808080;
+}
+
+.current-temp {
+    font-size: 32px;
+    font-weight: bold;
+    margin: 10px 0;
+}
+
+.current-location {
+    font-size: 14px;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.current-condition {
+    font-size: 12px;
+    color: #666;
+}
+
+.weather-details {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    padding: 15px;
+    border-bottom: 1px solid #808080;
+}
+
+.weather-detail {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 11px;
+}
+
+.forecast-section {
+    padding: 15px;
+}
+
+.forecast-title {
+    font-weight: bold;
+    margin-bottom: 10px;
+    font-size: 12px;
+}
+
+.forecast-container {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+}
+
+.forecast-day {
+    text-align: center;
+    padding: 10px;
+    border: 1px inset #c0c0c0;
+    background: #f0f0f0;
+}
+
+.forecast-day-name {
+    font-weight: bold;
+    font-size: 11px;
+    margin-bottom: 5px;
+}
+
+.forecast-icon {
+    font-size: 24px;
+    margin: 5px 0;
+}
+
+.forecast-temps {
+    font-size: 10px;
+}
+
+.forecast-high {
+    font-weight: bold;
+}
+
+.forecast-low {
+    color: #666;
+}
+
+.loading {
+    text-align: center;
+    padding: 20px;
+    color: #666;
+}
+
+/* ===== FORM ELEMENTS ===== */
+.form-group {
+    margin-bottom: 10px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 3px;
+    font-weight: bold;
+}
+
+.form-group input, .form-group select {
+    width: 100%;
+    padding: 2px 4px;
+    border: 1px inset #c0c0c0;
+    font-family: 'MS Sans Serif', sans-serif;
+    font-size: 11px;
+}
+
+.button-group {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 15px;
+}
+
+.button {
+    padding: 4px 16px;
+    background: linear-gradient(to bottom, #c0c0c0 0%, #808080 100%);
+    border: 2px outset #c0c0c0;
+    font-family: 'MS Sans Serif', sans-serif;
+    font-size: 11px;
+    cursor: pointer;
+}
+
+.button:active {
+    border: 2px inset #c0c0c0;
+}
