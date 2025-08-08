@@ -188,7 +188,59 @@
                         const desktop = document.getElementById('desktop');
                         const desktopRect = desktop.getBoundingClientRect();
                         
-                        let newX = e.clientX<!DOCTYPE html>
+                        let newX = e.clientX - desktopRect.left - offsetX;
+                        let newY = e.clientY - desktopRect.top - offsetY;
+
+                        // Keep icon within desktop bounds
+                        newX = Math.max(0, Math.min(newX, desktopRect.width - 80));
+                        newY = Math.max(0, Math.min(newY, desktopRect.height - 80));
+
+                        draggedIcon.style.left = newX + 'px';
+                        draggedIcon.style.top = newY + 'px';
+                    }
+                }
+
+                function handleMouseUp() {
+                    if (draggedIcon) {
+                        draggedIcon.classList.remove('dragging');
+                        draggedIcon = null;
+                    }
+                    document.removeEventListener('mousemove', handleMouseMove);
+                    document.removeEventListener('mouseup', handleMouseUp);
+                }
+
+                document.addEventListener('mousemove', handleMouseMove);
+                document.addEventListener('mouseup', handleMouseUp);
+            }
+        }
+
+        function handleDoubleClick(e) {
+            const url = e.currentTarget.dataset.url;
+            if (url) {
+                window.open(url, '_blank');
+            }
+        }
+
+        function handleRightClick(e) {
+            e.preventDefault();
+            currentIcon = e.currentTarget;
+            showContextMenu(e);
+        }
+
+        function showContextMenu(e) {
+            e.preventDefault();
+            const contextMenu = document.getElementById('contextMenu');
+            contextMenu.style.display = 'block';
+            contextMenu.style.left = e.clientX + 'px';
+            contextMenu.style.top = e.clientY + 'px';
+        }
+
+        // Hide context menu when clicking elsewhere
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.context-menu') && !e.target.closest('.start-button')) {
+                document.getElementById('contextMenu').style.display = 'none';
+            }
+        });<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
