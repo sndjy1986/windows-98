@@ -1,4 +1,194 @@
-<!DOCTYPE html>
+<script>
+        let draggedIcon = null;
+        let currentIcon = null;
+        let iconCounter = 0;
+        let isAdminAuthenticated = false;
+        const ADMIN_PASSWORD = "admin123"; // Change this to your desired password
+        let pendingAdminAction = null;
+
+        // Load saved icons on page load
+        window.addEventListener('load', function() {
+            // Icons will be loaded from the default HTML or imported config
+            setupIconDragging();
+        });
+
+        // Export configuration to JSON file
+        function exportConfig() {
+            const icons = [];
+            document.querySelectorAll('.desktop-icon').forEach(icon => {
+                icons.push({
+                    name: icon.querySelector('span').textContent,
+                    url: icon.dataset.url,
+                    emoji: icon.dataset.icon,
+                    left: icon.style.left,
+                    top: icon.style.top,
+                    id: icon.dataset.id || Math.random().toString(36).substr(2, 9)
+                });
+            });
+
+            const config = {
+                icons: icons,
+                exportDate: new Date().toISOString(),
+                version: "1.0"
+            };
+
+            const dataStr = JSON.stringify(config, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            const url = URL.createObjectURL(dataBlob);
+            
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'desktop-config.json';
+            link.click();
+            
+            URL.revokeObjectURL(url);
+            document.getElementById('contextMenu').style.display = 'none';
+        }
+
+        // Import configuration from JSON file
+        function importConfig() {
+            document.getElementById('importFile').click();
+            document.getElementById('contextMenu').style.display = 'none';
+        }
+
+        function handleImportFile(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const config = JSON.parse(e.target.result);
+                    if (config.icons && Array.isArray(config.icons)) {
+                        // Clear existing icons
+                        document.querySelectorAll('.desktop-icon').forEach(icon => icon.remove());
+                        
+                        // Load imported icons
+                        config.icons.forEach(iconData => {
+                            createIconElement(iconData);
+                        });
+                        
+                        alert('Configuration imported successfully!');
+                    } else {
+                        alert('Invalid configuration file format.');
+                    }
+                } catch (error) {
+                    alert('Error reading configuration file: ' + error.message);
+                }
+            };
+            reader.readAsText(file);
+            
+            // Reset file input
+            event.target.value = '';
+        }
+
+        // Create icon element
+        function createIconElement(iconData) {
+            const newIcon = document.createElement('div');
+            newIcon.className = 'desktop-icon';
+            newIcon.style.left = iconData.left || '20px';
+            newIcon.style.top = iconData.top || '20px';
+            newIcon.dataset.url = iconData.url;
+            newIcon.dataset.icon = iconData.emoji;
+            newIcon.dataset.id = iconData.id;
+            
+            newIcon.innerHTML = `
+                <div style="font-size: 32px; margin-bottom: 5px;">${iconData.emoji}</div>
+                <span>${iconData.name}</span>
+            `;
+
+            document.getElementById('desktop').appendChild(newIcon);
+
+            // Setup event listeners for the new icon
+            newIcon.addEventListener('mousedown', handleMouseDown);
+            newIcon.addEventListener('dblclick', handleDoubleClick);
+            newIcon.addEventListener('contextmenu', handleRightClick);
+        }
+
+        // Admin authentication functions
+        function requireAdminAuth(action) {
+            if (isAdminAuthenticated) {
+                action();
+            } else {
+                pendingAdminAction = action;
+                document.getElementById('adminModal').style.display = 'flex';
+                document.getElementById('adminPassword').focus();
+            }
+        }
+
+        function checkAdminPassword() {
+            const enteredPassword = document.getElementById('adminPassword').value;
+            if (enteredPassword === ADMIN_PASSWORD) {
+                isAdminAuthenticated = true;
+                closeAdminModal();
+                if (pendingAdminAction) {
+                    pendingAdminAction();
+                    pendingAdminAction = null;
+                }
+            } else {
+                alert('Incorrect password. Access denied.');
+                document.getElementById('adminPassword').value = '';
+            }
+        }
+
+        function closeAdminModal() {
+            document.getElementById('adminModal').style.display = 'none';
+            document.getElementById('adminPassword').value = '';
+        }
+
+        // Handle Enter key in password field
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && document.getElementById('adminModal').style.display === 'flex') {
+                checkAdminPassword();
+            }
+        });
+
+        // Update time display
+        function updateTime() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('en-US', {
+                hour12: true,
+                hour: 'numeric',
+                minute: '2-digit'
+            });
+            const dateString = now.toLocaleDateString('en-US', {
+                month: 'numeric',
+                day: 'numeric',
+                year: 'numeric'
+            });
+            document.getElementById('timeDisplay').textContent = `${timeString} ${dateString}`;
+        }
+
+        // Initialize time display
+        updateTime();
+        setInterval(updateTime, 1000);
+
+        // Icon drag and drop functionality
+        function setupIconDragging() {
+            const icons = document.querySelectorAll('.desktop-icon');
+            
+            icons.forEach(icon => {
+                icon.addEventListener('mousedown', handleMouseDown);
+                icon.addEventListener('dblclick', handleDoubleClick);
+                icon.addEventListener('contextmenu', handleRightClick);
+            });
+        }
+
+        function handleMouseDown(e) {
+            if (e.button === 0) { // Left click only
+                draggedIcon = e.currentTarget;
+                const rect = draggedIcon.getBoundingClientRect();
+                const offsetX = e.clientX - rect.left;
+                const offsetY = e.clientY - rect.top;
+
+                draggedIcon.classList.add('dragging');
+
+                function handleMouseMove(e) {
+                    if (draggedIcon) {
+                        const desktop = document.getElementById('desktop');
+                        const desktopRect = desktop.getBoundingClientRect();
+                        
+                        let newX = e.clientX<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -263,9 +453,34 @@
 
     <!-- Context Menu -->
     <div class="context-menu" id="contextMenu">
-        <div class="context-menu-item" onclick="addNewIcon()">Add New Icon</div>
-        <div class="context-menu-item" onclick="editIcon(currentIcon)">Edit Icon</div>
-        <div class="context-menu-item" onclick="deleteIcon(currentIcon)">Delete Icon</div>
+        <div class="context-menu-item" onclick="requireAdminAuth(() => addNewIcon())">Add New Icon</div>
+        <div class="context-menu-item" onclick="requireAdminAuth(() => editIcon(currentIcon))">Edit Icon</div>
+        <div class="context-menu-item" onclick="requireAdminAuth(() => deleteIcon(currentIcon))">Delete Icon</div>
+        <div class="context-menu-item" onclick="requireAdminAuth(() => exportConfig())">Export Config</div>
+        <div class="context-menu-item" onclick="requireAdminAuth(() => importConfig())">Import Config</div>
+    </div>
+
+    <!-- Import File Input (hidden) -->
+    <input type="file" id="importFile" accept=".json" style="display: none;" onchange="handleImportFile(event)">
+
+    <!-- Admin Password Modal -->
+    <div class="modal" id="adminModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span>Administrator Access Required</span>
+                <button class="modal-close" onclick="closeAdminModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="adminPassword">Enter Admin Password:</label>
+                    <input type="password" id="adminPassword" placeholder="Password">
+                </div>
+                <div class="button-group">
+                    <button class="button" onclick="closeAdminModal()">Cancel</button>
+                    <button class="button" onclick="checkAdminPassword()">OK</button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Modal for adding/editing icons -->
@@ -469,25 +684,17 @@
                 currentIcon.dataset.icon = emoji;
             } else {
                 // Create new icon
-                const newIcon = document.createElement('div');
-                newIcon.className = 'desktop-icon';
-                newIcon.style.left = (120 + (iconCounter * 20)) + 'px';
-                newIcon.style.top = (20 + (iconCounter * 20)) + 'px';
-                newIcon.dataset.url = url;
-                newIcon.dataset.icon = emoji;
+                const iconData = {
+                    name: name,
+                    url: url,
+                    emoji: emoji,
+                    left: (120 + (iconCounter * 20)) + 'px',
+                    top: (20 + (iconCounter * 20)) + 'px',
+                    id: Math.random().toString(36).substr(2, 9)
+                };
                 
-                newIcon.innerHTML = `
-                    <div style="font-size: 32px; margin-bottom: 5px;">${emoji}</div>
-                    <span>${name}</span>
-                `;
-
-                document.getElementById('desktop').appendChild(newIcon);
+                createIconElement(iconData);
                 iconCounter++;
-
-                // Setup event listeners for the new icon
-                newIcon.addEventListener('mousedown', handleMouseDown);
-                newIcon.addEventListener('dblclick', handleDoubleClick);
-                newIcon.addEventListener('contextmenu', handleRightClick);
             }
 
             closeModal();
