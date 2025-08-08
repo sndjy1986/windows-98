@@ -68,8 +68,36 @@
             border: 2px inset #c0c0c0;
         }
 
-        .weather-button {
-            min-width: 100px;
+        .running-apps {
+            display: flex;
+            align-items: center;
+            gap: 2px;
+        }
+
+        .app-button {
+            height: 26px;
+            padding: 0 12px;
+            background: linear-gradient(to bottom, #c0c0c0 0%, #808080 100%);
+            border: 2px outset #c0c0c0;
+            font-size: 11px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            min-width: 120px;
+            max-width: 150px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .app-button:active {
+            border: 2px inset #c0c0c0;
+        }
+
+        .app-button.active {
+            background: linear-gradient(to bottom, #808080 0%, #c0c0c0 100%);
+            border: 2px inset #c0c0c0;
         }
 
         .system-tray {
@@ -193,6 +221,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            cursor: move;
         }
 
         .modal-close {
@@ -205,6 +234,12 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            color: black;
+        }
+
+        .modal-close:hover {
+            background: #ff4444;
+            color: white;
         }
 
         .modal-body {
@@ -405,10 +440,9 @@
             <button class="start-button" onclick="toggleStartMenu()">
                 Start
             </button>
-            <button class="weather-button" onclick="openWeatherApp()">
-                <span id="weatherIcon">🌤️</span>
-                <span id="weatherText">Weather</span>
-            </button>
+            <div id="runningApps" class="running-apps">
+                <!-- Running applications will appear here -->
+            </div>
         </div>
         <div style="flex: 1;"></div>
         <div class="system-tray" id="systemTray">
@@ -418,6 +452,9 @@
 
     <!-- Start Menu -->
     <div class="start-menu" id="startMenu">
+        <div class="start-menu-item" onclick="openWeatherApp()">
+            <span>🌤️</span>Weather
+        </div>
         <div class="start-menu-item" onclick="requireAdminAuth(() => addNewIcon())">
             <span>📄</span>Add New Icon
         </div>
@@ -569,6 +606,8 @@
         const ADMIN_PASSWORD = "admin123";
         let pendingAdminAction = null;
         let weatherData = null;
+        let isWeatherAppOpen = false;
+        let runningApps = [];
 
         // Weather API configuration
         const WEATHER_API_KEY = "8b093586dd2c02084b20747b888d3cfa";
@@ -581,6 +620,7 @@
                 setInterval(updateTime, 1000);
                 setupIconDragging();
                 setupEventListeners();
+                setupModalDragging();
                 fetchWeatherData();
                 setInterval(fetchWeatherData, 600000); // Update weather every 10 minutes
             } catch (error) {
@@ -609,55 +649,27 @@
                         current: currentData,
                         forecast: forecastData
                     };
-                    
-                    updateTaskbarWeather(currentData);
                 } else {
                     console.error('Weather API error');
-                    updateTaskbarWeatherError();
                 }
             } catch (error) {
                 console.error('Weather fetch error:', error);
-                updateTaskbarWeatherError();
-            }
-        }
-
-        function updateTaskbarWeather(data) {
-            const weatherIcon = document.getElementById('weatherIcon');
-            const weatherText = document.getElementById('weatherText');
-            
-            if (weatherIcon && weatherText) {
-                const temp = Math.round(data.main.temp);
-                const condition = data.weather[0].main;
-                
-                // Set weather icon based on condition
-                const iconMap = {
-                    'Clear': '☀️',
-                    'Clouds': '☁️',
-                    'Rain': '🌧️',
-                    'Drizzle': '🌦️',
-                    'Thunderstorm': '⛈️',
-                    'Snow': '❄️',
-                    'Mist': '🌫️',
-                    'Fog': '🌫️',
-                    'Haze': '🌫️'
-                };
-                
-                weatherIcon.textContent = iconMap[condition] || '🌤️';
-                weatherText.textContent = `${temp}°F`;
-            }
-        }
-
-        function updateTaskbarWeatherError() {
-            const weatherIcon = document.getElementById('weatherIcon');
-            const weatherText = document.getElementById('weatherText');
-            
-            if (weatherIcon && weatherText) {
-                weatherIcon.textContent = '❌';
-                weatherText.textContent = 'Error';
             }
         }
 
         function openWeatherApp() {
+            if (isWeatherAppOpen) {
+                // If already open, just focus it
+                const weatherModal = document.getElementById('weatherModal');
+                if (weatherModal) {
+                    weatherModal.style.display = 'flex';
+                }
+                return;
+            }
+
+            isWeatherAppOpen = true;
+            addAppToTaskbar('weather', '🌤️ Weather', () => focusWeatherApp());
+            
             const weatherModal = document.getElementById('weatherModal');
             const weatherLoading = document.getElementById('weatherLoading');
             const weatherContent = document.getElementById('weatherContent');
@@ -685,11 +697,49 @@
             hideAllMenus();
         }
 
+        function focusWeatherApp() {
+            const weatherModal = document.getElementById('weatherModal');
+            if (weatherModal) {
+                weatherModal.style.display = 'flex';
+            }
+        }
+
         function closeWeatherApp() {
+            isWeatherAppOpen = false;
+            removeAppFromTaskbar('weather');
+            
             const weatherModal = document.getElementById('weatherModal');
             if (weatherModal) {
                 weatherModal.style.display = 'none';
             }
+        }
+
+        function addAppToTaskbar(appId, appName, clickHandler) {
+            if (runningApps.find(app => app.id === appId)) {
+                return; // App already in taskbar
+            }
+
+            const app = { id: appId, name: appName, clickHandler: clickHandler };
+            runningApps.push(app);
+            updateTaskbar();
+        }
+
+        function removeAppFromTaskbar(appId) {
+            runningApps = runningApps.filter(app => app.id !== appId);
+            updateTaskbar();
+        }
+
+        function updateTaskbar() {
+            const runningAppsContainer = document.getElementById('runningApps');
+            runningAppsContainer.innerHTML = '';
+
+            runningApps.forEach(app => {
+                const appButton = document.createElement('button');
+                appButton.className = 'app-button';
+                appButton.innerHTML = app.name;
+                appButton.onclick = app.clickHandler;
+                runningAppsContainer.appendChild(appButton);
+            });
         }
 
         function populateWeatherApp() {
@@ -720,36 +770,45 @@
             
             // Group forecast by day and take one entry per day
             const dailyForecasts = {};
-            const today = new Date().toDateString();
+            const today = new Date();
+            today.setHours(0, 0, 0, 0); // Reset time to start of day
             
             forecastData.list.forEach(item => {
                 const date = new Date(item.dt * 1000);
-                const dateString = date.toDateString();
+                const dateKey = date.toDateString();
                 
-                // Skip today and only take noon forecasts for better representation
-                if (dateString !== today && date.getHours() === 12) {
-                    if (!dailyForecasts[dateString]) {
-                        dailyForecasts[dateString] = item;
+                // Only take forecasts for the next 3 days (excluding today)
+                const daysDiff = Math.floor((date - today) / (1000 * 60 * 60 * 24));
+                
+                if (daysDiff > 0 && daysDiff <= 3) {
+                    // Take the forecast around noon for better representation
+                    if (!dailyForecasts[dateKey] || Math.abs(date.getHours() - 12) < Math.abs(new Date(dailyForecasts[dateKey].dt * 1000).getHours() - 12)) {
+                        dailyForecasts[dateKey] = item;
                     }
                 }
             });
             
-            // Take the first 3 days
-            const forecastDays = Object.values(dailyForecasts).slice(0, 3);
+            // Convert to array and sort by date
+            const forecastDays = Object.values(dailyForecasts)
+                .sort((a, b) => a.dt - b.dt)
+                .slice(0, 3);
             
             forecastDays.forEach(day => {
                 const date = new Date(day.dt * 1000);
                 const dayName = date.toLocaleDateString('en-US', { weekday: 'short' });
+                const monthDay = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
                 
                 const forecastDiv = document.createElement('div');
                 forecastDiv.className = 'forecast-day';
                 forecastDiv.innerHTML = `
                     <div class="forecast-day-name">${dayName}</div>
+                    <div style="font-size: 9px; color: #666; margin-bottom: 3px;">${monthDay}</div>
                     <div class="forecast-icon">${getWeatherEmoji(day.weather[0].main)}</div>
                     <div class="forecast-temps">
                         <div class="forecast-high">${Math.round(day.main.temp_max)}°</div>
                         <div class="forecast-low">${Math.round(day.main.temp_min)}°</div>
                     </div>
+                    <div style="font-size: 9px; color: #666; margin-top: 3px; text-align: center;">${day.weather[0].description}</div>
                 `;
                 
                 forecastContainer.appendChild(forecastDiv);
@@ -769,6 +828,53 @@
                 'Haze': '🌫️'
             };
             return iconMap[condition] || '🌤️';
+        }
+
+        // Window dragging functionality
+        function setupModalDragging() {
+            const weatherModal = document.getElementById('weatherModal');
+            const weatherHeader = weatherModal.querySelector('.modal-header');
+            
+            let isDragging = false;
+            let dragOffset = { x: 0, y: 0 };
+            
+            weatherHeader.addEventListener('mousedown', function(e) {
+                isDragging = true;
+                const modalContent = weatherModal.querySelector('.modal-content');
+                const rect = modalContent.getBoundingClientRect();
+                
+                dragOffset.x = e.clientX - rect.left;
+                dragOffset.y = e.clientY - rect.top;
+                
+                weatherHeader.style.cursor = 'grabbing';
+            });
+            
+            document.addEventListener('mousemove', function(e) {
+                if (!isDragging) return;
+                
+                const modalContent = weatherModal.querySelector('.modal-content');
+                let newX = e.clientX - dragOffset.x;
+                let newY = e.clientY - dragOffset.y;
+                
+                // Keep window within viewport bounds
+                const maxX = window.innerWidth - modalContent.offsetWidth;
+                const maxY = window.innerHeight - modalContent.offsetHeight;
+                
+                newX = Math.max(0, Math.min(newX, maxX));
+                newY = Math.max(0, Math.min(newY, maxY));
+                
+                modalContent.style.position = 'fixed';
+                modalContent.style.left = newX + 'px';
+                modalContent.style.top = newY + 'px';
+                modalContent.style.margin = '0';
+            });
+            
+            document.addEventListener('mouseup', function() {
+                if (isDragging) {
+                    isDragging = false;
+                    weatherHeader.style.cursor = 'move';
+                }
+            });
         }
 
         // Start menu functions
