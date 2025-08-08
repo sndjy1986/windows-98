@@ -51,7 +51,7 @@
             gap: 5px;
         }
 
-        .start-button {
+        .start-button, .weather-button {
             height: 26px;
             padding: 0 15px;
             background: linear-gradient(to bottom, #c0c0c0 0%, #808080 100%);
@@ -61,22 +61,15 @@
             align-items: center;
             cursor: pointer;
             font-size: 11px;
+            gap: 5px;
         }
 
-        .start-button:active {
+        .start-button:active, .weather-button:active {
             border: 2px inset #c0c0c0;
         }
 
-        .weather-widget {
-            height: 26px;
-            background: linear-gradient(to bottom, #c0c0c0 0%, #808080 100%);
-            border: 1px inset #c0c0c0;
-            padding: 3px 8px;
-            font-size: 10px;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            min-width: 120px;
+        .weather-button {
+            min-width: 100px;
         }
 
         .system-tray {
@@ -187,6 +180,11 @@
             padding: 0;
         }
 
+        .weather-modal-content {
+            width: 500px;
+            max-width: 90vw;
+        }
+
         .modal-header {
             background: linear-gradient(90deg, #0080ff, #004080);
             color: white;
@@ -211,6 +209,94 @@
 
         .modal-body {
             padding: 15px;
+        }
+
+        .weather-app {
+            padding: 0;
+        }
+
+        .current-weather {
+            text-align: center;
+            padding: 20px;
+            border-bottom: 1px solid #808080;
+        }
+
+        .current-temp {
+            font-size: 32px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .current-location {
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .current-condition {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .weather-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            padding: 15px;
+            border-bottom: 1px solid #808080;
+        }
+
+        .weather-detail {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 11px;
+        }
+
+        .forecast-section {
+            padding: 15px;
+        }
+
+        .forecast-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            font-size: 12px;
+        }
+
+        .forecast-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        .forecast-day {
+            text-align: center;
+            padding: 10px;
+            border: 1px inset #c0c0c0;
+            background: #f0f0f0;
+        }
+
+        .forecast-day-name {
+            font-weight: bold;
+            font-size: 11px;
+            margin-bottom: 5px;
+        }
+
+        .forecast-icon {
+            font-size: 24px;
+            margin: 5px 0;
+        }
+
+        .forecast-temps {
+            font-size: 10px;
+        }
+
+        .forecast-high {
+            font-weight: bold;
+        }
+
+        .forecast-low {
+            color: #666;
         }
 
         .form-group {
@@ -281,6 +367,12 @@
             opacity: 0.7;
             z-index: 100;
         }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
     </style>
 </head>
 <body>
@@ -313,10 +405,10 @@
             <button class="start-button" onclick="toggleStartMenu()">
                 Start
             </button>
-            <div class="weather-widget" id="weatherWidget">
+            <button class="weather-button" onclick="openWeatherApp()">
                 <span id="weatherIcon">🌤️</span>
-                <span id="weatherText">Loading...</span>
-            </div>
+                <span id="weatherText">Weather</span>
+            </button>
         </div>
         <div style="flex: 1;"></div>
         <div class="system-tray" id="systemTray">
@@ -354,6 +446,55 @@
 
     <!-- Import File Input (hidden) -->
     <input type="file" id="importFile" accept=".json" style="display: none;" onchange="handleImportFile(event)">
+
+    <!-- Weather App Modal -->
+    <div class="modal" id="weatherModal">
+        <div class="modal-content weather-modal-content">
+            <div class="modal-header">
+                <span>🌤️ Weather</span>
+                <button class="modal-close" onclick="closeWeatherApp()">×</button>
+            </div>
+            <div class="weather-app">
+                <div id="weatherLoading" class="loading">
+                    Loading weather data...
+                </div>
+                <div id="weatherContent" style="display: none;">
+                    <div class="current-weather">
+                        <div class="current-location" id="currentLocation">Anderson, SC</div>
+                        <div id="currentWeatherIcon">🌤️</div>
+                        <div class="current-temp" id="currentTemp">--°F</div>
+                        <div class="current-condition" id="currentCondition">Loading...</div>
+                    </div>
+                    
+                    <div class="weather-details">
+                        <div class="weather-detail">
+                            <span>Feels like:</span>
+                            <span id="feelsLike">--°F</span>
+                        </div>
+                        <div class="weather-detail">
+                            <span>Humidity:</span>
+                            <span id="humidity">--%</span>
+                        </div>
+                        <div class="weather-detail">
+                            <span>Wind:</span>
+                            <span id="windSpeed">-- mph</span>
+                        </div>
+                        <div class="weather-detail">
+                            <span>Pressure:</span>
+                            <span id="pressure">-- mb</span>
+                        </div>
+                    </div>
+                    
+                    <div class="forecast-section">
+                        <div class="forecast-title">3-Day Forecast</div>
+                        <div class="forecast-container" id="forecastContainer">
+                            <!-- Forecast days will be populated here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Admin Password Modal -->
     <div class="modal" id="adminModal">
@@ -427,6 +568,7 @@
         let isAdminAuthenticated = false;
         const ADMIN_PASSWORD = "admin123";
         let pendingAdminAction = null;
+        let weatherData = null;
 
         // Weather API configuration
         const WEATHER_API_KEY = "8b093586dd2c02084b20747b888d3cfa";
@@ -439,40 +581,53 @@
                 setInterval(updateTime, 1000);
                 setupIconDragging();
                 setupEventListeners();
-                fetchWeather();
-                setInterval(fetchWeather, 600000); // Update weather every 10 minutes
+                fetchWeatherData();
+                setInterval(fetchWeatherData, 600000); // Update weather every 10 minutes
             } catch (error) {
                 console.error('Initialization error:', error);
             }
         });
 
         // Weather functions
-        async function fetchWeather() {
+        async function fetchWeatherData() {
             try {
-                const response = await fetch(
+                // Fetch current weather
+                const currentResponse = await fetch(
                     `https://api.openweathermap.org/data/2.5/weather?q=${WEATHER_LOCATION}&appid=${WEATHER_API_KEY}&units=imperial`
                 );
                 
-                if (response.ok) {
-                    const data = await response.json();
-                    updateWeatherDisplay(data);
+                // Fetch forecast
+                const forecastResponse = await fetch(
+                    `https://api.openweathermap.org/data/2.5/forecast?q=${WEATHER_LOCATION}&appid=${WEATHER_API_KEY}&units=imperial`
+                );
+                
+                if (currentResponse.ok && forecastResponse.ok) {
+                    const currentData = await currentResponse.json();
+                    const forecastData = await forecastResponse.json();
+                    
+                    weatherData = {
+                        current: currentData,
+                        forecast: forecastData
+                    };
+                    
+                    updateTaskbarWeather(currentData);
                 } else {
-                    console.error('Weather API error:', response.status);
-                    document.getElementById('weatherText').textContent = 'Weather N/A';
+                    console.error('Weather API error');
+                    updateTaskbarWeatherError();
                 }
             } catch (error) {
                 console.error('Weather fetch error:', error);
-                document.getElementById('weatherText').textContent = 'Weather N/A';
+                updateTaskbarWeatherError();
             }
         }
 
-        function updateWeatherDisplay(weatherData) {
+        function updateTaskbarWeather(data) {
             const weatherIcon = document.getElementById('weatherIcon');
             const weatherText = document.getElementById('weatherText');
             
             if (weatherIcon && weatherText) {
-                const temp = Math.round(weatherData.main.temp);
-                const condition = weatherData.weather[0].main;
+                const temp = Math.round(data.main.temp);
+                const condition = data.weather[0].main;
                 
                 // Set weather icon based on condition
                 const iconMap = {
@@ -490,6 +645,130 @@
                 weatherIcon.textContent = iconMap[condition] || '🌤️';
                 weatherText.textContent = `${temp}°F`;
             }
+        }
+
+        function updateTaskbarWeatherError() {
+            const weatherIcon = document.getElementById('weatherIcon');
+            const weatherText = document.getElementById('weatherText');
+            
+            if (weatherIcon && weatherText) {
+                weatherIcon.textContent = '❌';
+                weatherText.textContent = 'Error';
+            }
+        }
+
+        function openWeatherApp() {
+            const weatherModal = document.getElementById('weatherModal');
+            const weatherLoading = document.getElementById('weatherLoading');
+            const weatherContent = document.getElementById('weatherContent');
+            
+            if (weatherModal) {
+                weatherModal.style.display = 'flex';
+                
+                if (weatherData) {
+                    populateWeatherApp();
+                    weatherLoading.style.display = 'none';
+                    weatherContent.style.display = 'block';
+                } else {
+                    weatherLoading.style.display = 'block';
+                    weatherContent.style.display = 'none';
+                    // Try to fetch weather data if not available
+                    fetchWeatherData().then(() => {
+                        if (weatherData) {
+                            populateWeatherApp();
+                            weatherLoading.style.display = 'none';
+                            weatherContent.style.display = 'block';
+                        }
+                    });
+                }
+            }
+            hideAllMenus();
+        }
+
+        function closeWeatherApp() {
+            const weatherModal = document.getElementById('weatherModal');
+            if (weatherModal) {
+                weatherModal.style.display = 'none';
+            }
+        }
+
+        function populateWeatherApp() {
+            if (!weatherData) return;
+            
+            const current = weatherData.current;
+            const forecast = weatherData.forecast;
+            
+            // Update current weather
+            document.getElementById('currentLocation').textContent = current.name + ', ' + current.sys.country;
+            document.getElementById('currentWeatherIcon').textContent = getWeatherEmoji(current.weather[0].main);
+            document.getElementById('currentTemp').textContent = Math.round(current.main.temp) + '°F';
+            document.getElementById('currentCondition').textContent = current.weather[0].description;
+            
+            // Update weather details
+            document.getElementById('feelsLike').textContent = Math.round(current.main.feels_like) + '°F';
+            document.getElementById('humidity').textContent = current.main.humidity + '%';
+            document.getElementById('windSpeed').textContent = Math.round(current.wind.speed) + ' mph';
+            document.getElementById('pressure').textContent = current.main.pressure + ' mb';
+            
+            // Update 3-day forecast
+            populateForecast(forecast);
+        }
+
+        function populateForecast(forecastData) {
+            const forecastContainer = document.getElementById('forecastContainer');
+            forecastContainer.innerHTML = '';
+            
+            // Group forecast by day and take one entry per day
+            const dailyForecasts = {};
+            const today = new Date().toDateString();
+            
+            forecastData.list.forEach(item => {
+                const date = new Date(item.dt * 1000);
+                const dateString = date.toDateString();
+                
+                // Skip today and only take noon forecasts for better representation
+                if (dateString !== today && date.getHours() === 12) {
+                    if (!dailyForecasts[dateString]) {
+                        dailyForecasts[dateString] = item;
+                    }
+                }
+            });
+            
+            // Take the first 3 days
+            const forecastDays = Object.values(dailyForecasts).slice(0, 3);
+            
+            forecastDays.forEach(day => {
+                const date = new Date(day.dt * 1000);
+                const dayName = date.toLocaleDateString('en-US', { weekday: 'short' });
+                
+                const forecastDiv = document.createElement('div');
+                forecastDiv.className = 'forecast-day';
+                forecastDiv.innerHTML = `
+                    <div class="forecast-day-name">${dayName}</div>
+                    <div class="forecast-icon">${getWeatherEmoji(day.weather[0].main)}</div>
+                    <div class="forecast-temps">
+                        <div class="forecast-high">${Math.round(day.main.temp_max)}°</div>
+                        <div class="forecast-low">${Math.round(day.main.temp_min)}°</div>
+                    </div>
+                `;
+                
+                forecastContainer.appendChild(forecastDiv);
+            });
+        }
+
+        function getWeatherEmoji(condition) {
+            const iconMap = {
+                'Clear': '☀️',
+                'Clouds': '☁️',
+                'Rain': '🌧️',
+                'Drizzle': '🌦️',
+                'Thunderstorm': '⛈️',
+                'Snow': '❄️',
+                'Mist': '🌫️',
+                'Fog': '🌫️',
+                'Haze': '🌫️'
+            };
+            return iconMap[condition] || '🌤️';
         }
 
         // Start menu functions
