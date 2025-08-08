@@ -45,6 +45,12 @@
             padding: 2px;
         }
 
+        .taskbar-left {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
         .start-button {
             height: 26px;
             padding: 0 15px;
@@ -61,6 +67,18 @@
             border: 2px inset #c0c0c0;
         }
 
+        .weather-widget {
+            height: 26px;
+            background: linear-gradient(to bottom, #c0c0c0 0%, #808080 100%);
+            border: 1px inset #c0c0c0;
+            padding: 3px 8px;
+            font-size: 10px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            min-width: 120px;
+        }
+
         .system-tray {
             height: 26px;
             background: linear-gradient(to bottom, #c0c0c0 0%, #808080 100%);
@@ -75,14 +93,14 @@
 
         .desktop-icon {
             position: absolute;
-            width: 80px;
-            height: 80px;
+            width: 64px;
+            height: 70px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
+            justify-content: flex-start;
             cursor: pointer;
-            padding: 5px;
+            padding: 2px;
             border-radius: 2px;
             transition: background-color 0.1s;
         }
@@ -95,6 +113,18 @@
             background-color: rgba(0, 0, 255, 0.3);
         }
 
+        .desktop-icon img {
+            width: 32px;
+            height: 32px;
+            margin-bottom: 4px;
+        }
+
+        .desktop-icon .icon-emoji {
+            font-size: 32px;
+            margin-bottom: 4px;
+            line-height: 32px;
+        }
+
         .desktop-icon span {
             color: white;
             font-size: 11px;
@@ -102,6 +132,38 @@
             word-wrap: break-word;
             text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
             line-height: 12px;
+            max-width: 60px;
+        }
+
+        .start-menu {
+            position: fixed;
+            bottom: 30px;
+            left: 2px;
+            background: #c0c0c0;
+            border: 2px outset #c0c0c0;
+            box-shadow: 2px -2px 5px rgba(0, 0, 0, 0.3);
+            display: none;
+            z-index: 1001;
+            min-width: 180px;
+        }
+
+        .start-menu-item {
+            padding: 6px 12px;
+            cursor: pointer;
+            font-size: 11px;
+            border-bottom: 1px solid #808080;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .start-menu-item:hover {
+            background: #0080ff;
+            color: white;
+        }
+
+        .start-menu-item:last-child {
+            border-bottom: none;
         }
 
         .modal {
@@ -223,36 +285,61 @@
 </head>
 <body>
     <div class="desktop" id="desktop">
-        <!-- Default icons -->
-       <div class="desktop-icon" style="left: 20px; top: 20px;" data-url="https://www.paycomonline.net/v4/ee/web.php/app/login" data-icon="🖥️" data-icon-type="image" data-image-url="https://icons.duckduckgo.com/ip3/paycomonline.net.ico">
-            <img src="https://icons.duckduckgo.com/ip3/paycomonline.net.ico" style="width: 32px; height: 32px; margin-bottom: 5px;" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-            <div style="font-size: 32px; margin-bottom: 5px; display: none;">🖥️</div>
+        <!-- Default icons with proper Windows 98 spacing -->
+       <div class="desktop-icon" style="left: 15px; top: 15px;" data-url="https://www.paycomonline.net/v4/ee/web.php/app/login" data-icon="🖥️" data-icon-type="image" data-image-url="https://icons.duckduckgo.com/ip3/paycomonline.net.ico">
+            <img src="https://icons.duckduckgo.com/ip3/paycomonline.net.ico" style="width: 32px; height: 32px; margin-bottom: 4px;" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+            <div class="icon-emoji" style="display: none;">🖥️</div>
             <span>PayCom Online</span>
         </div>
         
-        <div class="desktop-icon" style="left: 20px; top: 120px;" data-url="https://www.github.com" data-icon="📁">
-            <div style="font-size: 32px; margin-bottom: 5px;">📁</div>
+        <div class="desktop-icon" style="left: 15px; top: 95px;" data-url="https://www.github.com" data-icon="📁">
+            <div class="icon-emoji">📁</div>
             <span>Documents</span>
         </div>
         
-        <div class="desktop-icon" style="left: 20px; top: 220px;" data-url="https://www.youtube.com" data-icon="📺">
-            <div style="font-size: 32px; margin-bottom: 5px;">📺</div>
+        <div class="desktop-icon" style="left: 15px; top: 175px;" data-url="https://www.youtube.com" data-icon="📺">
+            <div class="icon-emoji">📺</div>
             <span>Entertainment</span>
         </div>
         
-        <div class="desktop-icon" style="left: 20px; top: 320px;" data-url="https://www.reddit.com" data-icon="🌐">
-            <div style="font-size: 32px; margin-bottom: 5px;">🌐</div>
+        <div class="desktop-icon" style="left: 15px; top: 255px;" data-url="https://www.reddit.com" data-icon="🌐">
+            <div class="icon-emoji">🌐</div>
             <span>Internet</span>
         </div>
     </div>
 
     <div class="taskbar">
-        <button class="start-button" onclick="showContextMenu(event)">
-            Start
-        </button>
+        <div class="taskbar-left">
+            <button class="start-button" onclick="toggleStartMenu()">
+                Start
+            </button>
+            <div class="weather-widget" id="weatherWidget">
+                <span id="weatherIcon">🌤️</span>
+                <span id="weatherText">Loading...</span>
+            </div>
+        </div>
         <div style="flex: 1;"></div>
         <div class="system-tray" id="systemTray">
             <span id="timeDisplay"></span>
+        </div>
+    </div>
+
+    <!-- Start Menu -->
+    <div class="start-menu" id="startMenu">
+        <div class="start-menu-item" onclick="requireAdminAuth(() => addNewIcon())">
+            <span>📄</span>Add New Icon
+        </div>
+        <div class="start-menu-item" onclick="requireAdminAuth(() => editIcon(currentIcon))">
+            <span>✏️</span>Edit Icon
+        </div>
+        <div class="start-menu-item" onclick="requireAdminAuth(() => deleteIcon(currentIcon))">
+            <span>🗑️</span>Delete Icon
+        </div>
+        <div class="start-menu-item" onclick="requireAdminAuth(() => exportConfig())">
+            <span>💾</span>Export Config
+        </div>
+        <div class="start-menu-item" onclick="requireAdminAuth(() => importConfig())">
+            <span>📂</span>Import Config
         </div>
     </div>
 
@@ -338,8 +425,12 @@
         let currentIcon = null;
         let iconCounter = 0;
         let isAdminAuthenticated = false;
-        const ADMIN_PASSWORD = "admin123"; // Change this to your desired password
+        const ADMIN_PASSWORD = "admin123";
         let pendingAdminAction = null;
+
+        // Weather API configuration
+        const WEATHER_API_KEY = "8b093586dd2c02084b20747b888d3cfa";
+        const WEATHER_LOCATION = "Anderson,SC,US";
 
         // Initialize on page load
         document.addEventListener('DOMContentLoaded', function() {
@@ -348,10 +439,70 @@
                 setInterval(updateTime, 1000);
                 setupIconDragging();
                 setupEventListeners();
+                fetchWeather();
+                setInterval(fetchWeather, 600000); // Update weather every 10 minutes
             } catch (error) {
                 console.error('Initialization error:', error);
             }
         });
+
+        // Weather functions
+        async function fetchWeather() {
+            try {
+                const response = await fetch(
+                    `https://api.openweathermap.org/data/2.5/weather?q=${WEATHER_LOCATION}&appid=${WEATHER_API_KEY}&units=imperial`
+                );
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    updateWeatherDisplay(data);
+                } else {
+                    console.error('Weather API error:', response.status);
+                    document.getElementById('weatherText').textContent = 'Weather N/A';
+                }
+            } catch (error) {
+                console.error('Weather fetch error:', error);
+                document.getElementById('weatherText').textContent = 'Weather N/A';
+            }
+        }
+
+        function updateWeatherDisplay(weatherData) {
+            const weatherIcon = document.getElementById('weatherIcon');
+            const weatherText = document.getElementById('weatherText');
+            
+            if (weatherIcon && weatherText) {
+                const temp = Math.round(weatherData.main.temp);
+                const condition = weatherData.weather[0].main;
+                
+                // Set weather icon based on condition
+                const iconMap = {
+                    'Clear': '☀️',
+                    'Clouds': '☁️',
+                    'Rain': '🌧️',
+                    'Drizzle': '🌦️',
+                    'Thunderstorm': '⛈️',
+                    'Snow': '❄️',
+                    'Mist': '🌫️',
+                    'Fog': '🌫️',
+                    'Haze': '🌫️'
+                };
+                
+                weatherIcon.textContent = iconMap[condition] || '🌤️';
+                weatherText.textContent = `${temp}°F`;
+            }
+        }
+
+        // Start menu functions
+        function toggleStartMenu() {
+            const startMenu = document.getElementById('startMenu');
+            if (startMenu) {
+                if (startMenu.style.display === 'block') {
+                    startMenu.style.display = 'none';
+                } else {
+                    startMenu.style.display = 'block';
+                }
+            }
+        }
 
         // Update time display
         function updateTime() {
@@ -378,12 +529,16 @@
 
         // Setup event listeners
         function setupEventListeners() {
-            // Hide context menu when clicking elsewhere
+            // Hide menus when clicking elsewhere
             document.addEventListener('click', function(e) {
-                if (!e.target.closest('.context-menu') && !e.target.closest('.start-button')) {
+                if (!e.target.closest('.context-menu') && !e.target.closest('.start-menu') && !e.target.closest('.start-button')) {
                     const contextMenu = document.getElementById('contextMenu');
+                    const startMenu = document.getElementById('startMenu');
                     if (contextMenu) {
                         contextMenu.style.display = 'none';
+                    }
+                    if (startMenu) {
+                        startMenu.style.display = 'none';
                     }
                 }
             });
@@ -439,8 +594,8 @@
                         let newY = e.clientY - desktopRect.top - offsetY;
 
                         // Keep icon within desktop bounds
-                        newX = Math.max(0, Math.min(newX, desktopRect.width - 80));
-                        newY = Math.max(0, Math.min(newY, desktopRect.height - 80));
+                        newX = Math.max(0, Math.min(newX, desktopRect.width - 64));
+                        newY = Math.max(0, Math.min(newY, desktopRect.height - 70));
 
                         draggedIcon.style.left = newX + 'px';
                         draggedIcon.style.top = newY + 'px';
@@ -477,10 +632,14 @@
         function showContextMenu(e) {
             e.preventDefault();
             const contextMenu = document.getElementById('contextMenu');
+            const startMenu = document.getElementById('startMenu');
             if (contextMenu) {
                 contextMenu.style.display = 'block';
                 contextMenu.style.left = e.clientX + 'px';
                 contextMenu.style.top = e.clientY + 'px';
+            }
+            if (startMenu) {
+                startMenu.style.display = 'none';
             }
         }
 
@@ -534,14 +693,14 @@
         function createIconElement(iconData) {
             const newIcon = document.createElement('div');
             newIcon.className = 'desktop-icon';
-            newIcon.style.left = iconData.left || '20px';
-            newIcon.style.top = iconData.top || '20px';
+            newIcon.style.left = iconData.left || '15px';
+            newIcon.style.top = iconData.top || '15px';
             newIcon.dataset.url = iconData.url;
             newIcon.dataset.icon = iconData.emoji;
             newIcon.dataset.id = iconData.id;
             
             newIcon.innerHTML = `
-                <div style="font-size: 32px; margin-bottom: 5px;">${iconData.emoji}</div>
+                <div class="icon-emoji">${iconData.emoji}</div>
                 <span>${iconData.name}</span>
             `;
 
@@ -562,7 +721,7 @@
                 const icons = [];
                 document.querySelectorAll('.desktop-icon').forEach(icon => {
                     const nameElement = icon.querySelector('span');
-                    const emojiElement = icon.querySelector('div');
+                    const emojiElement = icon.querySelector('.icon-emoji');
                     if (nameElement && emojiElement) {
                         icons.push({
                             name: nameElement.textContent,
@@ -591,10 +750,7 @@
                 link.click();
                 
                 URL.revokeObjectURL(url);
-                const contextMenu = document.getElementById('contextMenu');
-                if (contextMenu) {
-                    contextMenu.style.display = 'none';
-                }
+                hideAllMenus();
             } catch (error) {
                 console.error('Export error:', error);
                 alert('Error exporting configuration.');
@@ -607,10 +763,7 @@
             if (importFile) {
                 importFile.click();
             }
-            const contextMenu = document.getElementById('contextMenu');
-            if (contextMenu) {
-                contextMenu.style.display = 'none';
-            }
+            hideAllMenus();
         }
 
         function handleImportFile(event) {
@@ -645,6 +798,13 @@
             event.target.value = '';
         }
 
+        function hideAllMenus() {
+            const contextMenu = document.getElementById('contextMenu');
+            const startMenu = document.getElementById('startMenu');
+            if (contextMenu) contextMenu.style.display = 'none';
+            if (startMenu) startMenu.style.display = 'none';
+        }
+
         // Modal functions
         function addNewIcon() {
             const modalTitle = document.getElementById('modalTitle');
@@ -652,14 +812,13 @@
             const iconUrl = document.getElementById('iconUrl');
             const iconEmoji = document.getElementById('iconEmoji');
             const iconModal = document.getElementById('iconModal');
-            const contextMenu = document.getElementById('contextMenu');
 
             if (modalTitle) modalTitle.textContent = 'Add New Icon';
             if (iconName) iconName.value = '';
             if (iconUrl) iconUrl.value = '';
             if (iconEmoji) iconEmoji.value = '🖥️';
             if (iconModal) iconModal.style.display = 'flex';
-            if (contextMenu) contextMenu.style.display = 'none';
+            hideAllMenus();
             currentIcon = null;
         }
 
@@ -671,7 +830,6 @@
             const iconUrl = document.getElementById('iconUrl');
             const iconEmoji = document.getElementById('iconEmoji');
             const iconModal = document.getElementById('iconModal');
-            const contextMenu = document.getElementById('contextMenu');
 
             const nameElement = icon.querySelector('span');
             
@@ -680,7 +838,7 @@
             if (iconUrl) iconUrl.value = icon.dataset.url || '';
             if (iconEmoji) iconEmoji.value = icon.dataset.icon || '🖥️';
             if (iconModal) iconModal.style.display = 'flex';
-            if (contextMenu) contextMenu.style.display = 'none';
+            hideAllMenus();
         }
 
         function deleteIcon(icon) {
@@ -689,10 +847,7 @@
             if (confirm('Are you sure you want to delete this icon?')) {
                 icon.remove();
             }
-            const contextMenu = document.getElementById('contextMenu');
-            if (contextMenu) {
-                contextMenu.style.display = 'none';
-            }
+            hideAllMenus();
         }
 
         function closeModal() {
@@ -724,19 +879,23 @@
             if (currentIcon) {
                 // Edit existing icon
                 const nameElement = currentIcon.querySelector('span');
-                const emojiElement = currentIcon.querySelector('div');
+                const emojiElement = currentIcon.querySelector('.icon-emoji');
                 if (nameElement) nameElement.textContent = name;
                 if (emojiElement) emojiElement.textContent = emoji;
                 currentIcon.dataset.url = url;
                 currentIcon.dataset.icon = emoji;
             } else {
-                // Create new icon
+                // Create new icon - calculate grid position
+                const gridSize = 80; // Icon spacing
+                const col = Math.floor(iconCounter / 6); // 6 icons per column
+                const row = iconCounter % 6;
+                
                 const iconData = {
                     name: name,
                     url: url,
                     emoji: emoji,
-                    left: (120 + (iconCounter * 20)) + 'px',
-                    top: (20 + (iconCounter * 20)) + 'px',
+                    left: (15 + (col * gridSize)) + 'px',
+                    top: (15 + (row * gridSize)) + 'px',
                     id: Math.random().toString(36).substr(2, 9)
                 };
                 
