@@ -672,3 +672,18 @@ function hideAllMenus() {
     if (contextMenu) contextMenu.style.display = 'none';
     if (startMenu) startMenu.style.display = 'none';
 }
+async function createNewPassword(plainPassword) {
+    const salt = "win98desktop2024";
+    const encoder = new TextEncoder();
+    const saltedPassword = plainPassword + salt;
+    const data = encoder.encode(saltedPassword);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    const hash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    
+    console.log(`Password: "${Russell1}"`);
+    console.log(`Hash: "${hash}"`);
+    console.log('Copy this hash to your code to replace the password.');
+    
+    return hash;
+}
