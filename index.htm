@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Windows 98 Desktop</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'MS Sans Serif', sans-serif;
+            font-size: 11px;
+            background: linear-gradient(45deg, #008080 0%, #004040 100%);
+            height: 100vh;
+            overflow: hidden;
+            cursor: default;
+            user-select: none;
+        }
+
+        .desktop {
+            position: relative;
+            width: 100vw;
+            height: calc(100vh - 30px);
+            padding: 10px;
+        }
+
+        .taskbar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 30px;
+            background: linear-gradient(to bottom, #c0c0c0 0%, #808080 100%);
+            border-top: 1px solid #dfdfdf;
+            border-left: 1px solid #dfdfdf;
+            border-right: 1px solid #404040;
+            border-bottom: 1px solid #404040;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 2px;
+        }
+
+        .start-button {
+            height: 26px;
+            padding: 0 15px;
+            background: linear-gradient(to bottom, #c0c0c0 0%, #808080 100%);
+            border: 2px outset #c0c0c0;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            font-size: 11px;
+        }
+
+        .start-button:active {
+            border: 2px inset #c0c0c0;
+        }
+
+        .system-tray {
+            height: 26px;
+            background: linear-gradient(to bottom, #c0c0c0 0%, #808080 100%);
+            border: 1px inset #c0c0c0;
+            padding: 3px 8px;
+            font-size: 11px;
+            min-width: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .desktop-icon {
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 2px;
+            transition: background-color 0.1s;
+        }
+
+        .desktop-icon:hover {
+            background-color: rgba(0, 0, 255, 0.1);
+        }
+
+        .desktop-icon.selected {
+            background-color: rgba(0, 0, 255, 0.3);
+        }
+
+        .desktop-icon img {
+            width: 32px;
+            height: 32px;
+            margin-bottom: 5px;
+        }
+
+        .desktop-icon span {
+            color: white;
+            font-size: 11px;
+            text-align: center;
+            word-wrap: break-word;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+            line-height: 12px;
+        }
+
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: #c0c0c0;
+            border: 2px outset #c0c0c0;
+            width: 400px;
+            max-width: 90vw;
+            padding: 0;
+        }
+
+        .modal-header {
+            background: linear-gradient(90deg, #0080ff, #004080);
+            color: white;
+            padding: 3px 8px;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-close {
+            background: #c0c0c0;
+            border: 1px outset #c0c0c0;
+            width: 18px;
+            height: 16px;
+            font-size: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-body {
+            padding: 15px;
+        }
+
+        .form-group {
+            margin-bottom: 10px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 3px;
+            font-weight: bold;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 2px 4px;
+            border: 1px inset #c0c0c0;
+            font-family: 'MS Sans Serif', sans-serif;
+            font-size: 11px;
+        }
+
+        .button-group {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+            margin-top: 15px;
+        }
+
+        .button {
+            padding: 4px 16px;
+            background: linear-gradient(to bottom, #c0c0c0 0%, #808080 100%);
+            border: 2px outset #c0c0c0;
+            font-family: 'MS Sans Serif', sans-serif;
+            font-size: 11px;
+            cursor: pointer;
+        }
+
+        .button:active {
+            border: 2px inset #c0c0c0;
+        }
+
+        .context-menu {
+            position: fixed;
+            background: #c0c0c0;
+            border: 2px outset #c0c0c0;
+            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
+            display: none;
+            z-index: 1001;
+            min-width: 140px;
+        }
+
+        .context-menu-item {
+            padding: 4px 8px;
+            cursor: pointer;
+            font-size: 11px;
+            border-bottom: 1px solid #808080;
+        }
+
+        .context-menu-item:hover {
+            background: #0080ff;
+            color: white;
+        }
+
+        .context-menu-item:last-child {
+            border-bottom: none;
+        }
+
+        .dragging {
+            opacity: 0.7;
+            z-index: 100;
+        }
+    </style>
+</head>
+<body>
+    <div class="desktop" id="desktop">
+        <!-- Default icons -->
+        <div class="desktop-icon" style="left: 20px; top: 20px;" data-url="https://www.google.com" data-icon="🖥️">
+            <div style="font-size: 32px; margin-bottom: 5px;">🖥️</div>
+            <span>My Computer</span>
+        </div>
+        
+        <div class="desktop-icon" style="left: 20px; top: 120px;" data-url="https://www.github.com" data-icon="📁">
+            <div style="font-size: 32px; margin-bottom: 5px;">📁</div>
+            <span>Documents</span>
+        </div>
+        
+        <div class="desktop-icon" style="left: 20px; top: 220px;" data-url="https://www.youtube.com" data-icon="📺">
+            <div style="font-size: 32px; margin-bottom: 5px;">📺</div>
+            <span>Entertainment</span>
+        </div>
+        
+        <div class="desktop-icon" style="left: 20px; top: 320px;" data-url="https://www.reddit.com" data-icon="🌐">
+            <div style="font-size: 32px; margin-bottom: 5px;">🌐</div>
+            <span>Internet</span>
+        </div>
+    </div>
+
+    <div class="taskbar">
+        <button class="start-button" onclick="showContextMenu(event)">
+            Start
+        </button>
+        <div style="flex: 1;"></div>
+        <div class="system-tray" id="systemTray">
+            <span id="timeDisplay"></span>
+        </div>
+    </div>
+
+    <!-- Context Menu -->
+    <div class="context-menu" id="contextMenu">
+        <div class="context-menu-item" onclick="addNewIcon()">Add New Icon</div>
+        <div class="context-menu-item" onclick="editIcon(currentIcon)">Edit Icon</div>
+        <div class="context-menu-item" onclick="deleteIcon(currentIcon)">Delete Icon</div>
+    </div>
+
+    <!-- Modal for adding/editing icons -->
+    <div class="modal" id="iconModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span id="modalTitle">Add New Icon</span>
+                <button class="modal-close" onclick="closeModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="iconName">Name:</label>
+                    <input type="text" id="iconName" placeholder="Enter icon name">
+                </div>
+                <div class="form-group">
+                    <label for="iconUrl">URL:</label>
+                    <input type="text" id="iconUrl" placeholder="Enter website URL">
+                </div>
+                <div class="form-group">
+                    <label for="iconEmoji">Icon (Emoji):</label>
+                    <select id="iconEmoji">
+                        <option value="🖥️">🖥️ Computer</option>
+                        <option value="📁">📁 Folder</option>
+                        <option value="📄">📄 Document</option>
+                        <option value="🌐">🌐 Internet</option>
+                        <option value="📺">📺 Entertainment</option>
+                        <option value="🎮">🎮 Games</option>
+                        <option value="📧">📧 Email</option>
+                        <option value="📱">📱 Apps</option>
+                        <option value="🛒">🛒 Shopping</option>
+                        <option value="🎵">🎵 Music</option>
+                        <option value="📸">📸 Photos</option>
+                        <option value="💼">💼 Work</option>
+                        <option value="🔧">🔧 Tools</option>
+                        <option value="📚">📚 Education</option>
+                        <option value="🏠">🏠 Home</option>
+                    </select>
+                </div>
+                <div class="button-group">
+                    <button class="button" onclick="closeModal()">Cancel</button>
+                    <button class="button" onclick="saveIcon()">OK</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let draggedIcon = null;
+        let currentIcon = null;
+        let iconCounter = 0;
+
+        // Update time display
+        function updateTime() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('en-US', {
+                hour12: true,
+                hour: 'numeric',
+                minute: '2-digit'
+            });
+            const dateString = now.toLocaleDateString('en-US', {
+                month: 'numeric',
+                day: 'numeric',
+                year: 'numeric'
+            });
+            document.getElementById('timeDisplay').textContent = `${timeString} ${dateString}`;
+        }
+
+        // Initialize time display
+        updateTime();
+        setInterval(updateTime, 1000);
+
+        // Icon drag and drop functionality
+        function setupIconDragging() {
+            const icons = document.querySelectorAll('.desktop-icon');
+            
+            icons.forEach(icon => {
+                icon.addEventListener('mousedown', handleMouseDown);
+                icon.addEventListener('dblclick', handleDoubleClick);
+                icon.addEventListener('contextmenu', handleRightClick);
+            });
+        }
+
+        function handleMouseDown(e) {
+            if (e.button === 0) { // Left click only
+                draggedIcon = e.currentTarget;
+                const rect = draggedIcon.getBoundingClientRect();
+                const offsetX = e.clientX - rect.left;
+                const offsetY = e.clientY - rect.top;
+
+                draggedIcon.classList.add('dragging');
+
+                function handleMouseMove(e) {
+                    if (draggedIcon) {
+                        const desktop = document.getElementById('desktop');
+                        const desktopRect = desktop.getBoundingClientRect();
+                        
+                        let newX = e.clientX - desktopRect.left - offsetX;
+                        let newY = e.clientY - desktopRect.top - offsetY;
+
+                        // Keep icon within desktop bounds
+                        newX = Math.max(0, Math.min(newX, desktopRect.width - 80));
+                        newY = Math.max(0, Math.min(newY, desktopRect.height - 80));
+
+                        draggedIcon.style.left = newX + 'px';
+                        draggedIcon.style.top = newY + 'px';
+                    }
+                }
+
+                function handleMouseUp() {
+                    if (draggedIcon) {
+                        draggedIcon.classList.remove('dragging');
+                        draggedIcon = null;
+                    }
+                    document.removeEventListener('mousemove', handleMouseMove);
+                    document.removeEventListener('mouseup', handleMouseUp);
+                }
+
+                document.addEventListener('mousemove', handleMouseMove);
+                document.addEventListener('mouseup', handleMouseUp);
+            }
+        }
+
+        function handleDoubleClick(e) {
+            const url = e.currentTarget.dataset.url;
+            if (url) {
+                window.open(url, '_blank');
+            }
+        }
+
+        function handleRightClick(e) {
+            e.preventDefault();
+            currentIcon = e.currentTarget;
+            showContextMenu(e);
+        }
+
+        function showContextMenu(e) {
+            e.preventDefault();
+            const contextMenu = document.getElementById('contextMenu');
+            contextMenu.style.display = 'block';
+            contextMenu.style.left = e.clientX + 'px';
+            contextMenu.style.top = e.clientY + 'px';
+        }
+
+        // Hide context menu when clicking elsewhere
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.context-menu') && !e.target.closest('.start-button')) {
+                document.getElementById('contextMenu').style.display = 'none';
+            }
+        });
+
+        // Modal functions
+        function addNewIcon() {
+            document.getElementById('modalTitle').textContent = 'Add New Icon';
+            document.getElementById('iconName').value = '';
+            document.getElementById('iconUrl').value = '';
+            document.getElementById('iconEmoji').value = '🖥️';
+            document.getElementById('iconModal').style.display = 'flex';
+            document.getElementById('contextMenu').style.display = 'none';
+            currentIcon = null;
+        }
+
+        function editIcon(icon) {
+            if (!icon) return;
+            
+            document.getElementById('modalTitle').textContent = 'Edit Icon';
+            document.getElementById('iconName').value = icon.querySelector('span').textContent;
+            document.getElementById('iconUrl').value = icon.dataset.url || '';
+            document.getElementById('iconEmoji').value = icon.dataset.icon || '🖥️';
+            document.getElementById('iconModal').style.display = 'flex';
+            document.getElementById('contextMenu').style.display = 'none';
+        }
+
+        function deleteIcon(icon) {
+            if (!icon) return;
+            
+            if (confirm('Are you sure you want to delete this icon?')) {
+                icon.remove();
+            }
+            document.getElementById('contextMenu').style.display = 'none';
+        }
+
+        function closeModal() {
+            document.getElementById('iconModal').style.display = 'none';
+        }
+
+        function saveIcon() {
+            const name = document.getElementById('iconName').value.trim();
+            const url = document.getElementById('iconUrl').value.trim();
+            const emoji = document.getElementById('iconEmoji').value;
+
+            if (!name || !url) {
+                alert('Please fill in all fields.');
+                return;
+            }
+
+            if (currentIcon) {
+                // Edit existing icon
+                currentIcon.querySelector('span').textContent = name;
+                currentIcon.querySelector('div').textContent = emoji;
+                currentIcon.dataset.url = url;
+                currentIcon.dataset.icon = emoji;
+            } else {
+                // Create new icon
+                const newIcon = document.createElement('div');
+                newIcon.className = 'desktop-icon';
+                newIcon.style.left = (120 + (iconCounter * 20)) + 'px';
+                newIcon.style.top = (20 + (iconCounter * 20)) + 'px';
+                newIcon.dataset.url = url;
+                newIcon.dataset.icon = emoji;
+                
+                newIcon.innerHTML = `
+                    <div style="font-size: 32px; margin-bottom: 5px;">${emoji}</div>
+                    <span>${name}</span>
+                `;
+
+                document.getElementById('desktop').appendChild(newIcon);
+                iconCounter++;
+
+                // Setup event listeners for the new icon
+                newIcon.addEventListener('mousedown', handleMouseDown);
+                newIcon.addEventListener('dblclick', handleDoubleClick);
+                newIcon.addEventListener('contextmenu', handleRightClick);
+            }
+
+            closeModal();
+        }
+
+        // Initialize the desktop
+        setupIconDragging();
+
+        // Handle desktop right-click for adding icons
+        document.getElementById('desktop').addEventListener('contextmenu', function(e) {
+            if (e.target === this) {
+                currentIcon = null;
+                showContextMenu(e);
+            }
+        });
+    </script>
+</body>
+</html>
