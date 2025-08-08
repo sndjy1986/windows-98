@@ -1,246 +1,4 @@
-<script>
-        let draggedIcon = null;
-        let currentIcon = null;
-        let iconCounter = 0;
-        let isAdminAuthenticated = false;
-        const ADMIN_PASSWORD = "admin123"; // Change this to your desired password
-        let pendingAdminAction = null;
-
-        // Load saved icons on page load
-        window.addEventListener('load', function() {
-            // Icons will be loaded from the default HTML or imported config
-            setupIconDragging();
-        });
-
-        // Export configuration to JSON file
-        function exportConfig() {
-            const icons = [];
-            document.querySelectorAll('.desktop-icon').forEach(icon => {
-                icons.push({
-                    name: icon.querySelector('span').textContent,
-                    url: icon.dataset.url,
-                    emoji: icon.dataset.icon,
-                    left: icon.style.left,
-                    top: icon.style.top,
-                    id: icon.dataset.id || Math.random().toString(36).substr(2, 9)
-                });
-            });
-
-            const config = {
-                icons: icons,
-                exportDate: new Date().toISOString(),
-                version: "1.0"
-            };
-
-            const dataStr = JSON.stringify(config, null, 2);
-            const dataBlob = new Blob([dataStr], {type: 'application/json'});
-            const url = URL.createObjectURL(dataBlob);
-            
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = 'desktop-config.json';
-            link.click();
-            
-            URL.revokeObjectURL(url);
-            document.getElementById('contextMenu').style.display = 'none';
-        }
-
-        // Import configuration from JSON file
-        function importConfig() {
-            document.getElementById('importFile').click();
-            document.getElementById('contextMenu').style.display = 'none';
-        }
-
-        function handleImportFile(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const config = JSON.parse(e.target.result);
-                    if (config.icons && Array.isArray(config.icons)) {
-                        // Clear existing icons
-                        document.querySelectorAll('.desktop-icon').forEach(icon => icon.remove());
-                        
-                        // Load imported icons
-                        config.icons.forEach(iconData => {
-                            createIconElement(iconData);
-                        });
-                        
-                        alert('Configuration imported successfully!');
-                    } else {
-                        alert('Invalid configuration file format.');
-                    }
-                } catch (error) {
-                    alert('Error reading configuration file: ' + error.message);
-                }
-            };
-            reader.readAsText(file);
-            
-            // Reset file input
-            event.target.value = '';
-        }
-
-        // Create icon element
-        function createIconElement(iconData) {
-            const newIcon = document.createElement('div');
-            newIcon.className = 'desktop-icon';
-            newIcon.style.left = iconData.left || '20px';
-            newIcon.style.top = iconData.top || '20px';
-            newIcon.dataset.url = iconData.url;
-            newIcon.dataset.icon = iconData.emoji;
-            newIcon.dataset.id = iconData.id;
-            
-            newIcon.innerHTML = `
-                <div style="font-size: 32px; margin-bottom: 5px;">${iconData.emoji}</div>
-                <span>${iconData.name}</span>
-            `;
-
-            document.getElementById('desktop').appendChild(newIcon);
-
-            // Setup event listeners for the new icon
-            newIcon.addEventListener('mousedown', handleMouseDown);
-            newIcon.addEventListener('dblclick', handleDoubleClick);
-            newIcon.addEventListener('contextmenu', handleRightClick);
-        }
-
-        // Admin authentication functions
-        function requireAdminAuth(action) {
-            if (isAdminAuthenticated) {
-                action();
-            } else {
-                pendingAdminAction = action;
-                document.getElementById('adminModal').style.display = 'flex';
-                document.getElementById('adminPassword').focus();
-            }
-        }
-
-        function checkAdminPassword() {
-            const enteredPassword = document.getElementById('adminPassword').value;
-            if (enteredPassword === ADMIN_PASSWORD) {
-                isAdminAuthenticated = true;
-                closeAdminModal();
-                if (pendingAdminAction) {
-                    pendingAdminAction();
-                    pendingAdminAction = null;
-                }
-            } else {
-                alert('Incorrect password. Access denied.');
-                document.getElementById('adminPassword').value = '';
-            }
-        }
-
-        function closeAdminModal() {
-            document.getElementById('adminModal').style.display = 'none';
-            document.getElementById('adminPassword').value = '';
-        }
-
-        // Handle Enter key in password field
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter' && document.getElementById('adminModal').style.display === 'flex') {
-                checkAdminPassword();
-            }
-        });
-
-        // Update time display
-        function updateTime() {
-            const now = new Date();
-            const timeString = now.toLocaleTimeString('en-US', {
-                hour12: true,
-                hour: 'numeric',
-                minute: '2-digit'
-            });
-            const dateString = now.toLocaleDateString('en-US', {
-                month: 'numeric',
-                day: 'numeric',
-                year: 'numeric'
-            });
-            document.getElementById('timeDisplay').textContent = `${timeString} ${dateString}`;
-        }
-
-        // Initialize time display
-        updateTime();
-        setInterval(updateTime, 1000);
-
-        // Icon drag and drop functionality
-        function setupIconDragging() {
-            const icons = document.querySelectorAll('.desktop-icon');
-            
-            icons.forEach(icon => {
-                icon.addEventListener('mousedown', handleMouseDown);
-                icon.addEventListener('dblclick', handleDoubleClick);
-                icon.addEventListener('contextmenu', handleRightClick);
-            });
-        }
-
-        function handleMouseDown(e) {
-            if (e.button === 0) { // Left click only
-                draggedIcon = e.currentTarget;
-                const rect = draggedIcon.getBoundingClientRect();
-                const offsetX = e.clientX - rect.left;
-                const offsetY = e.clientY - rect.top;
-
-                draggedIcon.classList.add('dragging');
-
-                function handleMouseMove(e) {
-                    if (draggedIcon) {
-                        const desktop = document.getElementById('desktop');
-                        const desktopRect = desktop.getBoundingClientRect();
-                        
-                        let newX = e.clientX - desktopRect.left - offsetX;
-                        let newY = e.clientY - desktopRect.top - offsetY;
-
-                        // Keep icon within desktop bounds
-                        newX = Math.max(0, Math.min(newX, desktopRect.width - 80));
-                        newY = Math.max(0, Math.min(newY, desktopRect.height - 80));
-
-                        draggedIcon.style.left = newX + 'px';
-                        draggedIcon.style.top = newY + 'px';
-                    }
-                }
-
-                function handleMouseUp() {
-                    if (draggedIcon) {
-                        draggedIcon.classList.remove('dragging');
-                        draggedIcon = null;
-                    }
-                    document.removeEventListener('mousemove', handleMouseMove);
-                    document.removeEventListener('mouseup', handleMouseUp);
-                }
-
-                document.addEventListener('mousemove', handleMouseMove);
-                document.addEventListener('mouseup', handleMouseUp);
-            }
-        }
-
-        function handleDoubleClick(e) {
-            const url = e.currentTarget.dataset.url;
-            if (url) {
-                window.open(url, '_blank');
-            }
-        }
-
-        function handleRightClick(e) {
-            e.preventDefault();
-            currentIcon = e.currentTarget;
-            showContextMenu(e);
-        }
-
-        function showContextMenu(e) {
-            e.preventDefault();
-            const contextMenu = document.getElementById('contextMenu');
-            contextMenu.style.display = 'block';
-            contextMenu.style.left = e.clientX + 'px';
-            contextMenu.style.top = e.clientY + 'px';
-        }
-
-        // Hide context menu when clicking elsewhere
-        document.addEventListener('click', function(e) {
-            if (!e.target.closest('.context-menu') && !e.target.closest('.start-button')) {
-                document.getElementById('contextMenu').style.display = 'none';
-            }
-        });<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -335,12 +93,6 @@
 
         .desktop-icon.selected {
             background-color: rgba(0, 0, 255, 0.3);
-        }
-
-        .desktop-icon img {
-            width: 32px;
-            height: 32px;
-            margin-bottom: 5px;
         }
 
         .desktop-icon span {
@@ -580,29 +332,82 @@
     </div>
 
     <script>
+        // Global variables
         let draggedIcon = null;
         let currentIcon = null;
         let iconCounter = 0;
+        let isAdminAuthenticated = false;
+        const ADMIN_PASSWORD = "admin123"; // Change this to your desired password
+        let pendingAdminAction = null;
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            try {
+                updateTime();
+                setInterval(updateTime, 1000);
+                setupIconDragging();
+                setupEventListeners();
+            } catch (error) {
+                console.error('Initialization error:', error);
+            }
+        });
 
         // Update time display
         function updateTime() {
-            const now = new Date();
-            const timeString = now.toLocaleTimeString('en-US', {
-                hour12: true,
-                hour: 'numeric',
-                minute: '2-digit'
-            });
-            const dateString = now.toLocaleDateString('en-US', {
-                month: 'numeric',
-                day: 'numeric',
-                year: 'numeric'
-            });
-            document.getElementById('timeDisplay').textContent = `${timeString} ${dateString}`;
+            try {
+                const now = new Date();
+                const timeString = now.toLocaleTimeString('en-US', {
+                    hour12: true,
+                    hour: 'numeric',
+                    minute: '2-digit'
+                });
+                const dateString = now.toLocaleDateString('en-US', {
+                    month: 'numeric',
+                    day: 'numeric',
+                    year: 'numeric'
+                });
+                const timeDisplay = document.getElementById('timeDisplay');
+                if (timeDisplay) {
+                    timeDisplay.textContent = `${timeString} ${dateString}`;
+                }
+            } catch (error) {
+                console.error('Time update error:', error);
+            }
         }
 
-        // Initialize time display
-        updateTime();
-        setInterval(updateTime, 1000);
+        // Setup event listeners
+        function setupEventListeners() {
+            // Hide context menu when clicking elsewhere
+            document.addEventListener('click', function(e) {
+                if (!e.target.closest('.context-menu') && !e.target.closest('.start-button')) {
+                    const contextMenu = document.getElementById('contextMenu');
+                    if (contextMenu) {
+                        contextMenu.style.display = 'none';
+                    }
+                }
+            });
+
+            // Handle Enter key in password field
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    const adminModal = document.getElementById('adminModal');
+                    if (adminModal && adminModal.style.display === 'flex') {
+                        checkAdminPassword();
+                    }
+                }
+            });
+
+            // Handle desktop right-click for adding icons
+            const desktop = document.getElementById('desktop');
+            if (desktop) {
+                desktop.addEventListener('contextmenu', function(e) {
+                    if (e.target === this) {
+                        currentIcon = null;
+                        showContextMenu(e);
+                    }
+                });
+            }
+        }
 
         // Icon drag and drop functionality
         function setupIconDragging() {
@@ -671,38 +476,210 @@
         function showContextMenu(e) {
             e.preventDefault();
             const contextMenu = document.getElementById('contextMenu');
-            contextMenu.style.display = 'block';
-            contextMenu.style.left = e.clientX + 'px';
-            contextMenu.style.top = e.clientY + 'px';
+            if (contextMenu) {
+                contextMenu.style.display = 'block';
+                contextMenu.style.left = e.clientX + 'px';
+                contextMenu.style.top = e.clientY + 'px';
+            }
         }
 
-        // Hide context menu when clicking elsewhere
-        document.addEventListener('click', function(e) {
-            if (!e.target.closest('.context-menu') && !e.target.closest('.start-button')) {
-                document.getElementById('contextMenu').style.display = 'none';
+        // Admin authentication functions
+        function requireAdminAuth(action) {
+            if (isAdminAuthenticated) {
+                action();
+            } else {
+                pendingAdminAction = action;
+                const adminModal = document.getElementById('adminModal');
+                if (adminModal) {
+                    adminModal.style.display = 'flex';
+                    const passwordField = document.getElementById('adminPassword');
+                    if (passwordField) {
+                        passwordField.focus();
+                    }
+                }
             }
-        });
+        }
+
+        function checkAdminPassword() {
+            const passwordField = document.getElementById('adminPassword');
+            if (passwordField) {
+                const enteredPassword = passwordField.value;
+                if (enteredPassword === ADMIN_PASSWORD) {
+                    isAdminAuthenticated = true;
+                    closeAdminModal();
+                    if (pendingAdminAction) {
+                        pendingAdminAction();
+                        pendingAdminAction = null;
+                    }
+                } else {
+                    alert('Incorrect password. Access denied.');
+                    passwordField.value = '';
+                }
+            }
+        }
+
+        function closeAdminModal() {
+            const adminModal = document.getElementById('adminModal');
+            const passwordField = document.getElementById('adminPassword');
+            if (adminModal) {
+                adminModal.style.display = 'none';
+            }
+            if (passwordField) {
+                passwordField.value = '';
+            }
+        }
+
+        // Create icon element
+        function createIconElement(iconData) {
+            const newIcon = document.createElement('div');
+            newIcon.className = 'desktop-icon';
+            newIcon.style.left = iconData.left || '20px';
+            newIcon.style.top = iconData.top || '20px';
+            newIcon.dataset.url = iconData.url;
+            newIcon.dataset.icon = iconData.emoji;
+            newIcon.dataset.id = iconData.id;
+            
+            newIcon.innerHTML = `
+                <div style="font-size: 32px; margin-bottom: 5px;">${iconData.emoji}</div>
+                <span>${iconData.name}</span>
+            `;
+
+            const desktop = document.getElementById('desktop');
+            if (desktop) {
+                desktop.appendChild(newIcon);
+            }
+
+            // Setup event listeners for the new icon
+            newIcon.addEventListener('mousedown', handleMouseDown);
+            newIcon.addEventListener('dblclick', handleDoubleClick);
+            newIcon.addEventListener('contextmenu', handleRightClick);
+        }
+
+        // Export configuration to JSON file
+        function exportConfig() {
+            try {
+                const icons = [];
+                document.querySelectorAll('.desktop-icon').forEach(icon => {
+                    const nameElement = icon.querySelector('span');
+                    const emojiElement = icon.querySelector('div');
+                    if (nameElement && emojiElement) {
+                        icons.push({
+                            name: nameElement.textContent,
+                            url: icon.dataset.url,
+                            emoji: icon.dataset.icon,
+                            left: icon.style.left,
+                            top: icon.style.top,
+                            id: icon.dataset.id || Math.random().toString(36).substr(2, 9)
+                        });
+                    }
+                });
+
+                const config = {
+                    icons: icons,
+                    exportDate: new Date().toISOString(),
+                    version: "1.0"
+                };
+
+                const dataStr = JSON.stringify(config, null, 2);
+                const dataBlob = new Blob([dataStr], {type: 'application/json'});
+                const url = URL.createObjectURL(dataBlob);
+                
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = 'desktop-config.json';
+                link.click();
+                
+                URL.revokeObjectURL(url);
+                const contextMenu = document.getElementById('contextMenu');
+                if (contextMenu) {
+                    contextMenu.style.display = 'none';
+                }
+            } catch (error) {
+                console.error('Export error:', error);
+                alert('Error exporting configuration.');
+            }
+        }
+
+        // Import configuration from JSON file
+        function importConfig() {
+            const importFile = document.getElementById('importFile');
+            if (importFile) {
+                importFile.click();
+            }
+            const contextMenu = document.getElementById('contextMenu');
+            if (contextMenu) {
+                contextMenu.style.display = 'none';
+            }
+        }
+
+        function handleImportFile(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const config = JSON.parse(e.target.result);
+                    if (config.icons && Array.isArray(config.icons)) {
+                        // Clear existing icons
+                        document.querySelectorAll('.desktop-icon').forEach(icon => icon.remove());
+                        
+                        // Load imported icons
+                        config.icons.forEach(iconData => {
+                            createIconElement(iconData);
+                        });
+                        
+                        alert('Configuration imported successfully!');
+                    } else {
+                        alert('Invalid configuration file format.');
+                    }
+                } catch (error) {
+                    console.error('Import error:', error);
+                    alert('Error reading configuration file: ' + error.message);
+                }
+            };
+            reader.readAsText(file);
+            
+            // Reset file input
+            event.target.value = '';
+        }
 
         // Modal functions
         function addNewIcon() {
-            document.getElementById('modalTitle').textContent = 'Add New Icon';
-            document.getElementById('iconName').value = '';
-            document.getElementById('iconUrl').value = '';
-            document.getElementById('iconEmoji').value = '🖥️';
-            document.getElementById('iconModal').style.display = 'flex';
-            document.getElementById('contextMenu').style.display = 'none';
+            const modalTitle = document.getElementById('modalTitle');
+            const iconName = document.getElementById('iconName');
+            const iconUrl = document.getElementById('iconUrl');
+            const iconEmoji = document.getElementById('iconEmoji');
+            const iconModal = document.getElementById('iconModal');
+            const contextMenu = document.getElementById('contextMenu');
+
+            if (modalTitle) modalTitle.textContent = 'Add New Icon';
+            if (iconName) iconName.value = '';
+            if (iconUrl) iconUrl.value = '';
+            if (iconEmoji) iconEmoji.value = '🖥️';
+            if (iconModal) iconModal.style.display = 'flex';
+            if (contextMenu) contextMenu.style.display = 'none';
             currentIcon = null;
         }
 
         function editIcon(icon) {
             if (!icon) return;
             
-            document.getElementById('modalTitle').textContent = 'Edit Icon';
-            document.getElementById('iconName').value = icon.querySelector('span').textContent;
-            document.getElementById('iconUrl').value = icon.dataset.url || '';
-            document.getElementById('iconEmoji').value = icon.dataset.icon || '🖥️';
-            document.getElementById('iconModal').style.display = 'flex';
-            document.getElementById('contextMenu').style.display = 'none';
+            const modalTitle = document.getElementById('modalTitle');
+            const iconName = document.getElementById('iconName');
+            const iconUrl = document.getElementById('iconUrl');
+            const iconEmoji = document.getElementById('iconEmoji');
+            const iconModal = document.getElementById('iconModal');
+            const contextMenu = document.getElementById('contextMenu');
+
+            const nameElement = icon.querySelector('span');
+            
+            if (modalTitle) modalTitle.textContent = 'Edit Icon';
+            if (iconName && nameElement) iconName.value = nameElement.textContent;
+            if (iconUrl) iconUrl.value = icon.dataset.url || '';
+            if (iconEmoji) iconEmoji.value = icon.dataset.icon || '🖥️';
+            if (iconModal) iconModal.style.display = 'flex';
+            if (contextMenu) contextMenu.style.display = 'none';
         }
 
         function deleteIcon(icon) {
@@ -711,17 +688,32 @@
             if (confirm('Are you sure you want to delete this icon?')) {
                 icon.remove();
             }
-            document.getElementById('contextMenu').style.display = 'none';
+            const contextMenu = document.getElementById('contextMenu');
+            if (contextMenu) {
+                contextMenu.style.display = 'none';
+            }
         }
 
         function closeModal() {
-            document.getElementById('iconModal').style.display = 'none';
+            const iconModal = document.getElementById('iconModal');
+            if (iconModal) {
+                iconModal.style.display = 'none';
+            }
         }
 
         function saveIcon() {
-            const name = document.getElementById('iconName').value.trim();
-            const url = document.getElementById('iconUrl').value.trim();
-            const emoji = document.getElementById('iconEmoji').value;
+            const iconName = document.getElementById('iconName');
+            const iconUrl = document.getElementById('iconUrl');
+            const iconEmoji = document.getElementById('iconEmoji');
+
+            if (!iconName || !iconUrl || !iconEmoji) {
+                alert('Form elements not found.');
+                return;
+            }
+
+            const name = iconName.value.trim();
+            const url = iconUrl.value.trim();
+            const emoji = iconEmoji.value;
 
             if (!name || !url) {
                 alert('Please fill in all fields.');
@@ -730,8 +722,10 @@
 
             if (currentIcon) {
                 // Edit existing icon
-                currentIcon.querySelector('span').textContent = name;
-                currentIcon.querySelector('div').textContent = emoji;
+                const nameElement = currentIcon.querySelector('span');
+                const emojiElement = currentIcon.querySelector('div');
+                if (nameElement) nameElement.textContent = name;
+                if (emojiElement) emojiElement.textContent = emoji;
                 currentIcon.dataset.url = url;
                 currentIcon.dataset.icon = emoji;
             } else {
@@ -751,17 +745,6 @@
 
             closeModal();
         }
-
-        // Initialize the desktop
-        setupIconDragging();
-
-        // Handle desktop right-click for adding icons
-        document.getElementById('desktop').addEventListener('contextmenu', function(e) {
-            if (e.target === this) {
-                currentIcon = null;
-                showContextMenu(e);
-            }
-        });
     </script>
 </body>
 </html>
