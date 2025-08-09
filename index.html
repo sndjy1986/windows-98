@@ -26,6 +26,20 @@
             width: 100vw;
             height: calc(100vh - 30px);
             padding: 10px;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        /* Mobile adjustments */
+        @media (max-width: 768px) {
+            .desktop {
+                height: calc(100vh - 40px);
+                padding: 5px;
+            }
+            
+            body {
+                font-size: 12px;
+            }
         }
 
         .taskbar {
@@ -43,12 +57,23 @@
             align-items: center;
             justify-content: space-between;
             padding: 2px;
+            z-index: 1000;
+        }
+
+        /* Mobile taskbar adjustments */
+        @media (max-width: 768px) {
+            .taskbar {
+                height: 40px;
+                padding: 4px;
+            }
         }
 
         .taskbar-left {
             display: flex;
             align-items: center;
             gap: 5px;
+            flex: 1;
+            min-width: 0;
         }
 
         .start-button, .weather-button {
@@ -62,6 +87,16 @@
             cursor: pointer;
             font-size: 11px;
             gap: 5px;
+            white-space: nowrap;
+        }
+
+        /* Mobile button adjustments */
+        @media (max-width: 768px) {
+            .start-button, .weather-button {
+                height: 32px;
+                padding: 0 10px;
+                font-size: 12px;
+            }
         }
 
         .start-button:active, .weather-button:active {
@@ -72,6 +107,14 @@
             display: flex;
             align-items: center;
             gap: 2px;
+            flex: 1;
+            overflow-x: auto;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+
+        .running-apps::-webkit-scrollbar {
+            display: none;
         }
 
         .app-button {
@@ -84,11 +127,23 @@
             display: flex;
             align-items: center;
             gap: 5px;
-            min-width: 120px;
-            max-width: 150px;
+            min-width: 80px;
+            max-width: 120px;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        /* Mobile app button adjustments */
+        @media (max-width: 768px) {
+            .app-button {
+                height: 32px;
+                min-width: 60px;
+                max-width: 100px;
+                padding: 0 8px;
+                font-size: 10px;
+            }
         }
 
         .app-button:active {
@@ -106,10 +161,21 @@
             border: 1px inset #c0c0c0;
             padding: 3px 8px;
             font-size: 11px;
-            min-width: 120px;
+            min-width: 80px;
             display: flex;
             align-items: center;
             justify-content: center;
+            flex-shrink: 0;
+        }
+
+        /* Mobile system tray adjustments */
+        @media (max-width: 768px) {
+            .system-tray {
+                height: 32px;
+                min-width: 60px;
+                font-size: 9px;
+                padding: 2px 4px;
+            }
         }
 
         .desktop-icon {
@@ -126,6 +192,24 @@
             transition: background-color 0.1s;
         }
 
+        /* Mobile icon adjustments */
+        @media (max-width: 768px) {
+            .desktop-icon {
+                width: 56px;
+                height: 65px;
+                position: relative !important;
+                display: inline-flex;
+                margin: 5px;
+            }
+            
+            .desktop {
+                display: flex;
+                flex-wrap: wrap;
+                align-content: flex-start;
+                justify-content: flex-start;
+            }
+        }
+
         .desktop-icon:hover {
             background-color: rgba(0, 0, 255, 0.1);
         }
@@ -140,10 +224,26 @@
             margin-bottom: 4px;
         }
 
+        /* Mobile icon image adjustments */
+        @media (max-width: 768px) {
+            .desktop-icon img {
+                width: 28px;
+                height: 28px;
+            }
+        }
+
         .desktop-icon .icon-emoji {
             font-size: 32px;
             margin-bottom: 4px;
             line-height: 32px;
+        }
+
+        /* Mobile emoji adjustments */
+        @media (max-width: 768px) {
+            .desktop-icon .icon-emoji {
+                font-size: 28px;
+                line-height: 28px;
+            }
         }
 
         .desktop-icon span {
@@ -156,6 +256,15 @@
             max-width: 60px;
         }
 
+        /* Mobile text adjustments */
+        @media (max-width: 768px) {
+            .desktop-icon span {
+                font-size: 10px;
+                line-height: 11px;
+                max-width: 50px;
+            }
+        }
+
         .start-menu {
             position: fixed;
             bottom: 30px;
@@ -166,6 +275,17 @@
             display: none;
             z-index: 1001;
             min-width: 180px;
+            max-height: calc(100vh - 60px);
+            overflow-y: auto;
+        }
+
+        /* Mobile start menu adjustments */
+        @media (max-width: 768px) {
+            .start-menu {
+                bottom: 40px;
+                min-width: 160px;
+                max-height: calc(100vh - 80px);
+            }
         }
 
         .start-menu-item {
@@ -176,6 +296,14 @@
             display: flex;
             align-items: center;
             gap: 8px;
+        }
+
+        /* Mobile menu item adjustments */
+        @media (max-width: 768px) {
+            .start-menu-item {
+                padding: 8px 12px;
+                font-size: 12px;
+            }
         }
 
         .start-menu-item:hover {
@@ -198,19 +326,41 @@
             justify-content: center;
             align-items: center;
             z-index: 1000;
+            padding: 20px;
         }
 
         .modal-content {
             background: #c0c0c0;
             border: 2px outset #c0c0c0;
             width: 400px;
-            max-width: 90vw;
+            max-width: 100%;
+            max-height: 90vh;
             padding: 0;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
         }
 
         .weather-modal-content {
             width: 500px;
-            max-width: 90vw;
+            max-width: 100%;
+        }
+
+        /* Mobile modal adjustments */
+        @media (max-width: 768px) {
+            .modal {
+                padding: 10px;
+            }
+            
+            .modal-content {
+                width: 100%;
+                max-width: 100%;
+                margin: 0;
+            }
+            
+            .weather-modal-content {
+                width: 100%;
+            }
         }
 
         .modal-header {
@@ -222,6 +372,7 @@
             justify-content: space-between;
             align-items: center;
             cursor: move;
+            flex-shrink: 0;
         }
 
         .modal-close {
@@ -237,6 +388,15 @@
             color: black;
         }
 
+        /* Mobile close button adjustments */
+        @media (max-width: 768px) {
+            .modal-close {
+                width: 24px;
+                height: 20px;
+                font-size: 12px;
+            }
+        }
+
         .modal-close:hover {
             background: #ff4444;
             color: white;
@@ -244,10 +404,21 @@
 
         .modal-body {
             padding: 15px;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        /* Mobile modal body adjustments */
+        @media (max-width: 768px) {
+            .modal-body {
+                padding: 10px;
+            }
         }
 
         .weather-app {
             padding: 0;
+            overflow-y: auto;
+            max-height: 100%;
         }
 
         .current-weather {
@@ -256,10 +427,24 @@
             border-bottom: 1px solid #808080;
         }
 
+        /* Mobile weather adjustments */
+        @media (max-width: 768px) {
+            .current-weather {
+                padding: 15px;
+            }
+        }
+
         .current-temp {
             font-size: 32px;
             font-weight: bold;
             margin: 10px 0;
+        }
+
+        /* Mobile temperature adjustments */
+        @media (max-width: 768px) {
+            .current-temp {
+                font-size: 28px;
+            }
         }
 
         .current-location {
@@ -281,6 +466,15 @@
             border-bottom: 1px solid #808080;
         }
 
+        /* Mobile weather details adjustments */
+        @media (max-width: 480px) {
+            .weather-details {
+                grid-template-columns: 1fr;
+                gap: 5px;
+                padding: 10px;
+            }
+        }
+
         .weather-detail {
             display: flex;
             justify-content: space-between;
@@ -290,6 +484,13 @@
 
         .forecast-section {
             padding: 15px;
+        }
+
+        /* Mobile forecast adjustments */
+        @media (max-width: 768px) {
+            .forecast-section {
+                padding: 10px;
+            }
         }
 
         .forecast-title {
@@ -304,11 +505,26 @@
             gap: 10px;
         }
 
+        /* Mobile forecast container adjustments */
+        @media (max-width: 480px) {
+            .forecast-container {
+                grid-template-columns: 1fr;
+                gap: 5px;
+            }
+        }
+
         .forecast-day {
             text-align: center;
             padding: 10px;
             border: 1px inset #c0c0c0;
             background: #f0f0f0;
+        }
+
+        /* Mobile forecast day adjustments */
+        @media (max-width: 768px) {
+            .forecast-day {
+                padding: 8px;
+            }
         }
 
         .forecast-day-name {
@@ -320,6 +536,14 @@
         .forecast-icon {
             font-size: 24px;
             margin: 5px 0;
+        }
+
+        /* Mobile forecast icon adjustments */
+        @media (max-width: 768px) {
+            .forecast-icon {
+                font-size: 20px;
+                margin: 3px 0;
+            }
         }
 
         .forecast-temps {
@@ -352,11 +576,27 @@
             font-size: 11px;
         }
 
+        /* Mobile form adjustments */
+        @media (max-width: 768px) {
+            .form-group input, .form-group select {
+                padding: 6px 8px;
+                font-size: 12px;
+            }
+        }
+
         .button-group {
             display: flex;
             justify-content: flex-end;
             gap: 8px;
             margin-top: 15px;
+        }
+
+        /* Mobile button group adjustments */
+        @media (max-width: 768px) {
+            .button-group {
+                justify-content: center;
+                flex-wrap: wrap;
+            }
         }
 
         .button {
@@ -366,6 +606,15 @@
             font-family: 'MS Sans Serif', sans-serif;
             font-size: 11px;
             cursor: pointer;
+        }
+
+        /* Mobile button adjustments */
+        @media (max-width: 768px) {
+            .button {
+                padding: 8px 20px;
+                font-size: 12px;
+                min-width: 80px;
+            }
         }
 
         .button:active {
@@ -380,6 +629,8 @@
             display: none;
             z-index: 1001;
             min-width: 140px;
+            max-height: calc(100vh - 40px);
+            overflow-y: auto;
         }
 
         .context-menu-item {
@@ -387,6 +638,14 @@
             cursor: pointer;
             font-size: 11px;
             border-bottom: 1px solid #808080;
+        }
+
+        /* Mobile context menu adjustments */
+        @media (max-width: 768px) {
+            .context-menu-item {
+                padding: 8px 12px;
+                font-size: 12px;
+            }
         }
 
         .context-menu-item:hover {
@@ -407,6 +666,55 @@
             text-align: center;
             padding: 20px;
             color: #666;
+        }
+
+        /* Touch-friendly adjustments */
+        @media (pointer: coarse) {
+            .desktop-icon, .start-menu-item, .context-menu-item, 
+            .app-button, .start-button, .button {
+                cursor: pointer;
+            }
+        }
+
+        /* Landscape phone adjustments */
+        @media (max-width: 768px) and (orientation: landscape) {
+            .desktop {
+                height: calc(100vh - 35px);
+            }
+            
+            .taskbar {
+                height: 35px;
+            }
+            
+            .start-button, .app-button, .system-tray {
+                height: 30px;
+            }
+        }
+
+        /* Very small screens */
+        @media (max-width: 480px) {
+            .desktop {
+                padding: 3px;
+            }
+            
+            .desktop-icon {
+                width: 50px;
+                height: 55px;
+                margin: 3px;
+            }
+            
+            .desktop-icon img, .desktop-icon .icon-emoji {
+                width: 24px;
+                height: 24px;
+                font-size: 24px;
+                line-height: 24px;
+            }
+            
+            .desktop-icon span {
+                font-size: 9px;
+                line-height: 10px;
+                max-width: 45px;
+            }
         }
     </style>
 </head>
@@ -643,6 +951,7 @@
         let weatherData = null;
         let isWeatherAppOpen = false;
         let runningApps = [];
+        let isMobile = window.innerWidth <= 768;
 
         // Weather API configuration
         const WEATHER_API_KEY = "8b093586dd2c02084b20747b888d3cfa";
@@ -658,10 +967,49 @@
                 setupModalDragging();
                 fetchWeatherData();
                 setInterval(fetchWeatherData, 600000); // Update weather every 10 minutes
+                handleResize();
+                window.addEventListener('resize', handleResize);
             } catch (error) {
                 console.error('Initialization error:', error);
             }
         });
+
+        // Handle responsive layout changes
+        function handleResize() {
+            const wasMobile = isMobile;
+            isMobile = window.innerWidth <= 768;
+            
+            if (wasMobile !== isMobile) {
+                adjustLayoutForScreenSize();
+            }
+        }
+
+        function adjustLayoutForScreenSize() {
+            const icons = document.querySelectorAll('.desktop-icon');
+            const desktop = document.getElementById('desktop');
+            
+            if (isMobile) {
+                // Switch to mobile layout - remove absolute positioning
+                icons.forEach(icon => {
+                    icon.style.position = 'relative';
+                    icon.style.left = 'auto';
+                    icon.style.top = 'auto';
+                });
+                desktop.style.display = 'flex';
+                desktop.style.flexWrap = 'wrap';
+            } else {
+                // Switch back to desktop layout
+                desktop.style.display = 'block';
+                icons.forEach((icon, index) => {
+                    icon.style.position = 'absolute';
+                    const gridSize = 80;
+                    const col = Math.floor(index / 6);
+                    const row = index % 6;
+                    icon.style.left = (15 + (col * gridSize)) + 'px';
+                    icon.style.top = (15 + (row * gridSize)) + 'px';
+                });
+            }
+        }
 
         // Weather functions
         async function fetchWeatherData() {
@@ -865,8 +1213,10 @@
             return iconMap[condition] || '🌤️';
         }
 
-        // Window dragging functionality
+        // Window dragging functionality (disabled on mobile)
         function setupModalDragging() {
+            if (isMobile) return; // Disable dragging on mobile
+            
             const weatherModal = document.getElementById('weatherModal');
             const weatherHeader = weatherModal.querySelector('.modal-header');
             
@@ -936,7 +1286,7 @@
                 const dateString = now.toLocaleDateString('en-US', {
                     month: 'numeric',
                     day: 'numeric',
-                    year: 'numeric'
+                    year: isMobile ? '2-digit' : 'numeric' // Shorter date on mobile
                 });
                 const timeDisplay = document.getElementById('timeDisplay');
                 if (timeDisplay) {
@@ -983,6 +1333,34 @@
                     }
                 });
             }
+
+            // Handle touch events on mobile
+            if (isMobile) {
+                setupTouchEvents();
+            }
+        }
+
+        function setupTouchEvents() {
+            // Add touch event handling for mobile
+            const desktop = document.getElementById('desktop');
+            let touchStartTime = 0;
+            
+            desktop.addEventListener('touchstart', function(e) {
+                touchStartTime = Date.now();
+            });
+            
+            desktop.addEventListener('touchend', function(e) {
+                const touchDuration = Date.now() - touchStartTime;
+                if (touchDuration > 500) { // Long press
+                    e.preventDefault();
+                    currentIcon = null;
+                    showContextMenu({
+                        clientX: e.changedTouches[0].clientX,
+                        clientY: e.changedTouches[0].clientY,
+                        preventDefault: () => {}
+                    });
+                }
+            });
         }
 
         // Icon drag and drop functionality
@@ -990,13 +1368,48 @@
             const icons = document.querySelectorAll('.desktop-icon');
             
             icons.forEach(icon => {
-                icon.addEventListener('mousedown', handleMouseDown);
+                if (!isMobile) {
+                    icon.addEventListener('mousedown', handleMouseDown);
+                }
                 icon.addEventListener('dblclick', handleDoubleClick);
                 icon.addEventListener('contextmenu', handleRightClick);
+                
+                // Touch events for mobile
+                if (isMobile) {
+                    icon.addEventListener('touchstart', handleTouchStart);
+                    icon.addEventListener('touchend', handleTouchEnd);
+                }
             });
         }
 
+        let touchStartTime = 0;
+        let touchStartIcon = null;
+
+        function handleTouchStart(e) {
+            touchStartTime = Date.now();
+            touchStartIcon = e.currentTarget;
+        }
+
+        function handleTouchEnd(e) {
+            const touchDuration = Date.now() - touchStartTime;
+            if (touchDuration < 300) {
+                // Short tap - open app
+                handleDoubleClick(e);
+            } else if (touchDuration > 500) {
+                // Long press - show context menu
+                e.preventDefault();
+                currentIcon = touchStartIcon;
+                showContextMenu({
+                    clientX: e.changedTouches[0].clientX,
+                    clientY: e.changedTouches[0].clientY,
+                    preventDefault: () => {}
+                });
+            }
+        }
+
         function handleMouseDown(e) {
+            if (isMobile) return; // Disable mouse dragging on mobile
+            
             if (e.button === 0) { // Left click only
                 draggedIcon = e.currentTarget;
                 const rect = draggedIcon.getBoundingClientRect();
@@ -1053,10 +1466,22 @@
             e.preventDefault();
             const contextMenu = document.getElementById('contextMenu');
             const startMenu = document.getElementById('startMenu');
+            
             if (contextMenu) {
                 contextMenu.style.display = 'block';
-                contextMenu.style.left = e.clientX + 'px';
-                contextMenu.style.top = e.clientY + 'px';
+                
+                // Adjust position for mobile
+                let x = e.clientX;
+                let y = e.clientY;
+                
+                if (isMobile) {
+                    // Center the menu better on mobile
+                    x = Math.min(x, window.innerWidth - 140);
+                    y = Math.min(y, window.innerHeight - 200);
+                }
+                
+                contextMenu.style.left = x + 'px';
+                contextMenu.style.top = y + 'px';
             }
             if (startMenu) {
                 startMenu.style.display = 'none';
@@ -1113,8 +1538,12 @@
         function createIconElement(iconData) {
             const newIcon = document.createElement('div');
             newIcon.className = 'desktop-icon';
-            newIcon.style.left = iconData.left || '15px';
-            newIcon.style.top = iconData.top || '15px';
+            
+            if (!isMobile) {
+                newIcon.style.left = iconData.left || '15px';
+                newIcon.style.top = iconData.top || '15px';
+            }
+            
             newIcon.dataset.url = iconData.url;
             newIcon.dataset.icon = iconData.emoji;
             newIcon.dataset.id = iconData.id;
@@ -1130,7 +1559,12 @@
             }
 
             // Setup event listeners for the new icon
-            newIcon.addEventListener('mousedown', handleMouseDown);
+            if (!isMobile) {
+                newIcon.addEventListener('mousedown', handleMouseDown);
+            } else {
+                newIcon.addEventListener('touchstart', handleTouchStart);
+                newIcon.addEventListener('touchend', handleTouchEnd);
+            }
             newIcon.addEventListener('dblclick', handleDoubleClick);
             newIcon.addEventListener('contextmenu', handleRightClick);
         }
@@ -1204,6 +1638,7 @@
                         });
                         
                         alert('Configuration imported successfully!');
+                        adjustLayoutForScreenSize(); // Adjust layout after import
                     } else {
                         alert('Invalid configuration file format.');
                     }
@@ -1305,19 +1740,32 @@
                 currentIcon.dataset.url = url;
                 currentIcon.dataset.icon = emoji;
             } else {
-                // Create new icon - calculate grid position
-                const gridSize = 80; // Icon spacing
-                const col = Math.floor(iconCounter / 6); // 6 icons per column
-                const row = iconCounter % 6;
+                // Create new icon
+                let iconData;
                 
-                const iconData = {
-                    name: name,
-                    url: url,
-                    emoji: emoji,
-                    left: (15 + (col * gridSize)) + 'px',
-                    top: (15 + (row * gridSize)) + 'px',
-                    id: Math.random().toString(36).substr(2, 9)
-                };
+                if (isMobile) {
+                    // On mobile, don't worry about positioning
+                    iconData = {
+                        name: name,
+                        url: url,
+                        emoji: emoji,
+                        id: Math.random().toString(36).substr(2, 9)
+                    };
+                } else {
+                    // On desktop, calculate grid position
+                    const gridSize = 80;
+                    const col = Math.floor(iconCounter / 6);
+                    const row = iconCounter % 6;
+                    
+                    iconData = {
+                        name: name,
+                        url: url,
+                        emoji: emoji,
+                        left: (15 + (col * gridSize)) + 'px',
+                        top: (15 + (row * gridSize)) + 'px',
+                        id: Math.random().toString(36).substr(2, 9)
+                    };
+                }
                 
                 createIconElement(iconData);
                 iconCounter++;
