@@ -969,6 +969,12 @@
                 setInterval(fetchWeatherData, 600000); // Update weather every 10 minutes
                 handleResize();
                 window.addEventListener('resize', handleResize);
+                window.addEventListener('orientationchange', () => {
+                    setTimeout(handleResize, 100); // Delay to ensure orientation change is complete
+                });
+                
+                // Initial layout calculation
+                setTimeout(calculateOptimalIconLayout, 100);
             } catch (error) {
                 console.error('Initialization error:', error);
             }
@@ -981,6 +987,9 @@
             
             if (wasMobile !== isMobile) {
                 adjustLayoutForScreenSize();
+            } else {
+                // Even if we're staying in the same mode, recalculate positions
+                calculateOptimalIconLayout();
             }
         }
 
@@ -997,17 +1006,66 @@
                 });
                 desktop.style.display = 'flex';
                 desktop.style.flexWrap = 'wrap';
+                desktop.style.alignContent = 'flex-start';
+                desktop.style.justifyContent = 'flex-start';
             } else {
-                // Switch back to desktop layout
+                // Switch back to desktop layout with smart positioning
                 desktop.style.display = 'block';
-                icons.forEach((icon, index) => {
-                    icon.style.position = 'absolute';
-                    const gridSize = 80;
-                    const col = Math.floor(index / 6);
-                    const row = index % 6;
-                    icon.style.left = (15 + (col * gridSize)) + 'px';
-                    icon.style.top = (15 + (row * gridSize)) + 'px';
-                });
+                desktop.style.alignContent = 'unset';
+                desktop.style.justifyContent = 'unset';
+                calculateOptimalIconLayout();
+            }
+        }
+
+        function calculateOptimalIconLayout() {
+            const icons = document.querySelectorAll('.desktop-icon');
+            if (icons.length === 0 || isMobile) return;
+
+            const desktop = document.getElementById('desktop');
+            const desktopRect = desktop.getBoundingClientRect();
+            
+            // Calculate available space
+            const availableWidth = desktopRect.width - 20; // Account for padding
+            const availableHeight = desktopRect.height - 20;
+            
+            // Icon dimensions
+            const iconWidth = 80;  // Including spacing
+            const iconHeight = 90; // Including spacing
+            
+            // Calculate how many icons fit per row and column
+            const iconsPerRow = Math.floor(availableWidth / iconWidth);
+            const iconsPerCol = Math.floor(availableHeight / iconHeight);
+            
+            // Calculate starting position to center the grid
+            const totalGridWidth = Math.min(icons.length, iconsPerRow) * iconWidth;
+            const totalGridHeight = Math.ceil(icons.length / iconsPerRow) * iconHeight;
+            
+            const startX = Math.max(10, (availableWidth - totalGridWidth) / 2 + 10);
+            const startY = Math.max(10, Math.min(10, (availableHeight - totalGridHeight) / 2 + 10));
+            
+            // Position each icon
+            icons.forEach((icon, index) => {
+                icon.style.position = 'absolute';
+                
+                const row = Math.floor(index / iconsPerRow);
+                const col = index % iconsPerRow;
+                
+                const x = startX + (col * iconWidth);
+                const y = startY + (row * iconHeight);
+                
+                // Ensure icon stays within bounds
+                const maxX = availableWidth - 64; // Icon width
+                const maxY = availableHeight - 70; // Icon height
+                
+                icon.style.left = Math.min(x, maxX) + 'px';
+                icon.style.top = Math.min(y, maxY) + 'px';
+            });
+        }
+
+        function autoArrangeIcons() {
+            // Public function to manually trigger icon rearrangement
+            if (!isMobile) {
+                calculateOptimalIconLayout();
             }
         }
 
@@ -1539,11 +1597,7 @@
             const newIcon = document.createElement('div');
             newIcon.className = 'desktop-icon';
             
-            if (!isMobile) {
-                newIcon.style.left = iconData.left || '15px';
-                newIcon.style.top = iconData.top || '15px';
-            }
-            
+            // Don't set initial position - let the layout system handle it
             newIcon.dataset.url = iconData.url;
             newIcon.dataset.icon = iconData.emoji;
             newIcon.dataset.id = iconData.id;
@@ -1567,6 +1621,13 @@
             }
             newIcon.addEventListener('dblclick', handleDoubleClick);
             newIcon.addEventListener('contextmenu', handleRightClick);
+            
+            // Trigger layout recalculation after adding new icon
+            setTimeout(() => {
+                if (!isMobile) {
+                    calculateOptimalIconLayout();
+                }
+            }, 10);
         }
 
         // Export configuration to JSON file
@@ -1638,7 +1699,14 @@
                         });
                         
                         alert('Configuration imported successfully!');
-                        adjustLayoutForScreenSize(); // Adjust layout after import
+                        
+                        // Adjust layout after import with a delay to ensure DOM is updated
+                        setTimeout(() => {
+                            adjustLayoutForScreenSize();
+                            if (!isMobile) {
+                                calculateOptimalIconLayout();
+                            }
+                        }, 100);
                     } else {
                         alert('Invalid configuration file format.');
                     }
@@ -1740,32 +1808,13 @@
                 currentIcon.dataset.url = url;
                 currentIcon.dataset.icon = emoji;
             } else {
-                // Create new icon
-                let iconData;
-                
-                if (isMobile) {
-                    // On mobile, don't worry about positioning
-                    iconData = {
-                        name: name,
-                        url: url,
-                        emoji: emoji,
-                        id: Math.random().toString(36).substr(2, 9)
-                    };
-                } else {
-                    // On desktop, calculate grid position
-                    const gridSize = 80;
-                    const col = Math.floor(iconCounter / 6);
-                    const row = iconCounter % 6;
-                    
-                    iconData = {
-                        name: name,
-                        url: url,
-                        emoji: emoji,
-                        left: (15 + (col * gridSize)) + 'px',
-                        top: (15 + (row * gridSize)) + 'px',
-                        id: Math.random().toString(36).substr(2, 9)
-                    };
-                }
+                // Create new icon - let the layout system position it
+                const iconData = {
+                    name: name,
+                    url: url,
+                    emoji: emoji,
+                    id: Math.random().toString(36).substr(2, 9)
+                };
                 
                 createIconElement(iconData);
                 iconCounter++;
@@ -1773,6 +1822,35 @@
 
             closeModal();
         }
+
+        // Add a menu item for manual icon arrangement
+        function addArrangeIconsMenuItem() {
+            const contextMenu = document.getElementById('contextMenu');
+            const startMenu = document.getElementById('startMenu');
+            
+            // Add to context menu
+            const arrangeContextItem = document.createElement('div');
+            arrangeContextItem.className = 'context-menu-item';
+            arrangeContextItem.textContent = 'Auto Arrange Icons';
+            arrangeContextItem.onclick = autoArrangeIcons;
+            contextMenu.appendChild(arrangeContextItem);
+            
+            // Add to start menu
+            const arrangeStartItem = document.createElement('div');
+            arrangeStartItem.className = 'start-menu-item';
+            arrangeStartItem.innerHTML = '<span>📐</span>Auto Arrange Icons';
+            arrangeStartItem.onclick = () => {
+                autoArrangeIcons();
+                hideAllMenus();
+            };
+            startMenu.appendChild(arrangeStartItem);
+        }
+
+        // Call this after DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            // ... existing initialization code ...
+            setTimeout(addArrangeIconsMenuItem, 100);
+        });
     </script>
 </body>
 </html>
