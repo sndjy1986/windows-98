@@ -1032,23 +1032,19 @@
             const iconWidth = 80;  // Including spacing
             const iconHeight = 90; // Including spacing
             
-            // Calculate how many icons fit per row and column
-            const iconsPerRow = Math.floor(availableWidth / iconWidth);
+            // Calculate how many icons fit per column (going down first)
             const iconsPerCol = Math.floor(availableHeight / iconHeight);
             
-            // Calculate starting position to center the grid
-            const totalGridWidth = Math.min(icons.length, iconsPerRow) * iconWidth;
-            const totalGridHeight = Math.ceil(icons.length / iconsPerRow) * iconHeight;
+            // Start from left side, top position
+            const startX = 15; // Left margin
+            const startY = 15; // Top margin
             
-            const startX = Math.max(10, (availableWidth - totalGridWidth) / 2 + 10);
-            const startY = Math.max(10, Math.min(10, (availableHeight - totalGridHeight) / 2 + 10));
-            
-            // Position each icon
+            // Position each icon - fill columns from left to right, top to bottom
             icons.forEach((icon, index) => {
                 icon.style.position = 'absolute';
                 
-                const row = Math.floor(index / iconsPerRow);
-                const col = index % iconsPerRow;
+                const col = Math.floor(index / iconsPerCol); // Which column (left to right)
+                const row = index % iconsPerCol; // Which row within that column (top to bottom)
                 
                 const x = startX + (col * iconWidth);
                 const y = startY + (row * iconHeight);
