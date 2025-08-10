@@ -96,20 +96,36 @@
     <div class="modal" id="weatherModal">
         <div class="modal-content weather-modal-content">
             <div class="modal-header">
-                <span>🌤️ Weather</span>
+                <span>Weather</span>
                 <button class="modal-close" onclick="closeWeatherApp()">×</button>
             </div>
-            <div class="weather-app">
+            <div class="modal-body weather-app">
                 <div id="weatherLoading" class="loading">Loading weather data...</div>
                 <div id="weatherContent" style="display: none;">
+                    <div class="current-weather">
+                        <div class="current-location" id="currentLocation"></div>
+                        <div class="current-temp" id="currentTemp"></div>
+                        <div class="current-condition" id="currentCondition"></div>
+                        <div id="currentWeatherIcon" class="weather-icon"></div>
                     </div>
+                    <div class="weather-details">
+                        <div class="detail-item"><span>Feels Like</span><span id="feelsLike"></span></div>
+                        <div class="detail-item"><span>Humidity</span><span id="humidity"></span></div>
+                        <div class="detail-item"><span>Wind</span><span id="windSpeed"></span></div>
+                        <div class="detail-item"><span>Pressure</span><span id="pressure"></span></div>
+                    </div>
+                    <div class="forecast-section">
+                        <h3>3-Day Forecast</h3>
+                        <div class="forecast-container" id="forecastContainer"></div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
     <div class="modal" id="adminModal">
         <div class="modal-content">
-            <div class="modal-header">
+             <div class="modal-header">
                 <span>Administrator Access</span>
                 <button class="modal-close" onclick="closeAdminModal()">×</button>
             </div>
@@ -127,7 +143,19 @@
                 <button class="modal-close" onclick="closeModal()">×</button>
             </div>
             <div class="modal-body">
-                 </div>
+                 <div class="form-group">
+                    <label for="iconName">Name:</label>
+                    <input type="text" id="iconName" placeholder="Enter icon name">
+                </div>
+                <div class="form-group">
+                    <label for="iconUrl">URL:</label>
+                    <input type="text" id="iconUrl" placeholder="Enter website URL">
+                </div>
+                <div class="button-group">
+                    <button class="button" onclick="closeModal()">Cancel</button>
+                    <button class="button" onclick="saveIcon()">OK</button>
+                </div>
+            </div>
         </div>
     </div>
 
