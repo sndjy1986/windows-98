@@ -7,8 +7,7 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="desktop" id="desktop">
-        </div>
+    <div class="desktop" id="desktop"></div>
 
     <div class="taskbar">
         <div class="taskbar-left">
@@ -131,11 +130,15 @@
             </div>
             <div class="modal-body">
                 <p>Enter Admin Password:</p>
-                <input type="password" id="adminPassword">
-                <button onclick="checkAdminPassword()">OK</button>
+                <input type="password" id="adminPassword" onkeypress="if(event.key==='Enter')checkAdminPassword()">
+                <div class="button-group">
+                    <button class="button" onclick="closeAdminModal()">Cancel</button>
+                    <button class="button" onclick="checkAdminPassword()">OK</button>
+                </div>
             </div>
         </div>
     </div>
+    
     <div class="modal" id="iconModal">
         <div class="modal-content">
              <div class="modal-header">
