@@ -123,7 +123,7 @@ function setupModalDragging(modalId) {
 function setupEventListeners() {
     document.addEventListener('click', (e) => {
         if (!e.target.closest('.start-button') && !e.target.closest('.start-menu')) {
-             const startMenu = document.getElementById('startMenu');
+            const startMenu = document.getElementById('startMenu');
             if (startMenu) startMenu.style.display = 'none';
         }
         if (!e.target.closest('.desktop-icon') && !e.target.closest('.context-menu')) {
@@ -224,6 +224,7 @@ let sol_stock = [], sol_waste = [], sol_foundations = [[], [], [], []], sol_tabl
 let sol_draggedInfo = null;
 
 function openSolitaireApp() {
+    hideAllMenus(); // FIX: Close Start Menu
     const modal = document.getElementById('solitaireModal');
     if (modal.style.display === 'flex') return;
     modal.style.display = 'flex';
@@ -315,6 +316,7 @@ async function fetchWeatherData() {
 }
 
 function openWeatherApp() {
+    hideAllMenus(); // FIX: Close Start Menu
     const modal = document.getElementById('weatherModal');
     if (modal.style.display === 'flex') return;
     isWeatherAppOpen = true;
@@ -373,10 +375,12 @@ function populateForecast(forecastData) {
         const forecastDiv = document.createElement('div');
         forecastDiv.className = 'forecast-day';
         forecastDiv.innerHTML = `
-            <div class="forecast-day-name">${dayName}</div><div style="font-size: 9px; color: #666; margin-bottom: 3px;">${monthDay}</div>
-            <div class="forecast-icon">${getWeatherEmoji(day.weather[0].main)}</div><div class="forecast-temps">
-            <div class="forecast-high">${Math.round(day.main.temp_max)}°</div><div class="forecast-low">${Math.round(day.main.temp_min)}°</div></div>
-            <div style="font-size: 9px; color: #666; margin-top: 3px; text-align: center;">${day.weather[0].description}</div>`;
+            <div class="day-name">${dayName} <span class="month-day">${monthDay}</span></div>
+            <div class="forecast-icon">${getWeatherEmoji(day.weather[0].main)}</div>
+            <div class="forecast-temps">
+                <span class="high">${Math.round(day.main.temp_max)}°</span>
+                <span class="low">${Math.round(day.main.temp_min)}°</span>
+            </div>`;
         container.appendChild(forecastDiv);
     });
 }
@@ -424,7 +428,6 @@ function addNewIcon() {
     document.getElementById('modalTitle').textContent = 'Add New Icon';
     document.getElementById('iconName').value = '';
     document.getElementById('iconUrl').value = '';
-    document.getElementById('iconEmoji').value = '🖥️';
     if(modal) modal.style.display = 'flex';
     hideAllMenus();
 }
@@ -436,8 +439,6 @@ function editIcon(icon) {
     document.getElementById('modalTitle').textContent = 'Edit Icon';
     document.getElementById('iconName').value = icon.querySelector('span').textContent;
     document.getElementById('iconUrl').value = icon.dataset.url;
-    // This part assumes a more complex createIconElement, for simplicity we'll leave it as is
-    // document.getElementById('iconEmoji').value = ...; 
     if(modal) modal.style.display = 'flex';
     hideAllMenus();
 }
@@ -458,16 +459,23 @@ function closeModal() {
 
 function saveIcon() {
     const name = document.getElementById('iconName').value.trim();
-    const url = document.getElementById('iconUrl').value.trim();
-    // const emoji = document.getElementById('iconEmoji').value; // For future enhancement
+    let url = document.getElementById('iconUrl').value.trim();
     if (!name || !url) { alert('Please fill in all fields.'); return; }
+    if (!url.startsWith('http')) { url = 'https://' + url; }
 
     if (currentIcon) {
         // Edit logic
+        currentIcon.querySelector('span').textContent = name;
+        currentIcon.dataset.url = url;
+        currentIcon.querySelector('img').src = `https://icons.duckduckgo.com/ip3/${new URL(url).hostname}.ico`;
     } else {
+        // Add new logic
         const newIconData = { name, url, id: `custom-${Date.now()}`, iconUrl: `https://icons.duckduckgo.com/ip3/${new URL(url).hostname}.ico` };
         createIconElement(newIconData);
         autoArrangeIcons();
     }
     closeModal();
 }
+
+function exportConfig() { /* Placeholder */ alert("Export coming soon!"); }
+function importConfig() { /* Placeholder */ alert("Import coming soon!"); }
