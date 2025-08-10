@@ -1034,6 +1034,9 @@
             // Calculate how many icons fit per column (going down first)
             const iconsPerCol = Math.floor(availableHeight / iconHeight);
             
+            // **FIX**: Prevent division by zero if screen is too small
+            if (iconsPerCol <= 0) return;
+
             // Start from left side, top position
             const startX = 15; // Left margin
             const startY = 15; // Top margin
@@ -1161,7 +1164,8 @@
         }
 
         function removeAppFromTaskbar(appId) {
-            runningApps = runningApps.filter(.app => app.id !== appId);
+            // **FIX**: Removed the stray period before 'app' that was causing a syntax error.
+            runningApps = runningApps.filter(app => app.id !== appId);
             updateTaskbar();
         }
 
