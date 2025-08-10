@@ -22,6 +22,7 @@ body {
     height: calc(100vh - 30px);
     padding: 10px;
 }
+
 .desktop-icon {
     position: absolute;
     width: 75px;
@@ -32,12 +33,20 @@ body {
     text-shadow: 1px 1px 1px black;
     cursor: pointer;
 }
+
 .desktop-icon img {
     width: 48px;
     height: 48px;
     display: block;
     margin: 0 auto 5px;
 }
+
+.desktop-icon span {
+    display: block;
+    font-size: 11px;
+    word-wrap: break-word;
+}
+
 .desktop-icon:hover {
     background: rgba(0,0,128,0.3);
     border: 1px dotted #fff;
@@ -55,8 +64,14 @@ body {
     display: flex;
     align-items: center;
     padding: 2px;
-    z-index: 2000; /* Increased z-index */
+    z-index: 2000;
 }
+
+.taskbar-left {
+    display: flex;
+    align-items: center;
+}
+
 .start-button {
     height: 26px;
     padding: 0 10px;
@@ -69,15 +84,18 @@ body {
     font-size: 11px;
     gap: 5px;
 }
+
 .start-button:active {
     border-style: inset;
 }
+
 .running-apps {
     display: flex;
     gap: 2px;
     margin-left: 5px;
     height: 100%;
 }
+
 .app-button {
     height: 24px;
     border: 1px outset #fff;
@@ -91,13 +109,19 @@ body {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    cursor: pointer;
+    font-size: 11px;
 }
+
+.app-button:active {
+    border-style: inset;
+}
+
 .system-tray {
     border: 1px inset #808080;
     padding: 2px 5px;
     margin-right: 2px;
 }
-
 
 /* ===== MENUS ===== */
 .start-menu, .context-menu {
@@ -106,17 +130,20 @@ body {
     border: 1px outset #fff;
     box-shadow: 2px 2px 5px rgba(0,0,0,0.5);
     display: none;
-    z-index: 2001; /* Higher than taskbar */
+    z-index: 2001;
     padding: 2px;
 }
+
 .start-menu {
     bottom: 32px;
     left: 2px;
     width: 180px;
 }
+
 .context-menu {
     min-width: 140px;
 }
+
 .start-menu-item, .context-menu-item {
     padding: 6px 12px;
     cursor: pointer;
@@ -124,10 +151,12 @@ body {
     align-items: center;
     gap: 8px;
 }
+
 .start-menu-item:hover, .context-menu-item:hover {
     background: #000080;
     color: white;
 }
+
 .start-menu-separator {
     height: 1px;
     background: #808080;
@@ -135,16 +164,15 @@ body {
     margin: 2px 0;
 }
 
-
 /* ===== MODALS (WINDOWS) ===== */
 .modal {
-    /* FIX: Restored position properties to make modals appear */
-    position: fixed; 
+    position: fixed;
     top: 50px;
     left: 100px;
     display: none;
-    z-index: 1001; /* Above desktop, below taskbar and menus */
+    z-index: 1001;
 }
+
 .modal-content {
     background: #c0c0c0;
     border: 1px outset #fff;
@@ -152,6 +180,7 @@ body {
     display: flex;
     flex-direction: column;
 }
+
 .modal-header {
     background: #000080;
     color: white;
@@ -162,6 +191,7 @@ body {
     align-items: center;
     cursor: move;
 }
+
 .modal-close {
     background: #c0c0c0;
     border: 1px outset #fff;
@@ -169,9 +199,51 @@ body {
     height: 14px;
     font-size: 10px;
     cursor: pointer;
+    text-align: center;
+    line-height: 12px;
 }
+
+.modal-close:active {
+    border-style: inset;
+}
+
 .modal-body {
     padding: 10px;
+}
+
+/* Form Elements */
+.form-group {
+    margin-bottom: 10px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 2px;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 2px;
+    border: 1px inset #808080;
+    background: white;
+}
+
+.button-group {
+    display: flex;
+    gap: 5px;
+    justify-content: flex-end;
+    margin-top: 10px;
+}
+
+.button {
+    padding: 4px 12px;
+    background: #c0c0c0;
+    border: 1px outset #fff;
+    cursor: pointer;
+}
+
+.button:active {
+    border-style: inset;
 }
 
 /* ===== SOLITAIRE GAME STYLES ===== */
@@ -179,6 +251,7 @@ body {
     width: 620px;
     height: 500px;
 }
+
 .solitaire-body {
     background-color: #008000;
     padding: 10px;
@@ -186,14 +259,60 @@ body {
     display: flex;
     flex-direction: column;
 }
-/* ... other solitaire styles ... */
+
+.solitaire-top-bar {
+    padding: 5px;
+    margin-bottom: 10px;
+}
+
+.solitaire-top-bar button {
+    padding: 2px 8px;
+    background: #c0c0c0;
+    border: 1px outset #fff;
+    cursor: pointer;
+}
+
+.solitaire-top-bar button:active {
+    border-style: inset;
+}
+
+#solitaire-game-board {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.solitaire-top-piles {
+    display: flex;
+    justify-content: space-between;
+}
+
+.solitaire-stock-waste {
+    display: flex;
+    gap: 10px;
+}
+
+.solitaire-foundations {
+    display: flex;
+    gap: 10px;
+}
+
+.solitaire-tableau-piles {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
 .pile {
     width: 80px;
     height: 110px;
     border: 1px solid #3c7f3c;
     position: relative;
     border-radius: 5px;
+    background: rgba(0,0,0,0.1);
 }
+
 .card {
     width: 80px;
     height: 110px;
@@ -208,72 +327,128 @@ body {
     background-size: contain;
 }
 
+.card.back {
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 110"><rect width="80" height="110" fill="%23800080"/><rect x="5" y="5" width="70" height="100" fill="none" stroke="%23FFD700" stroke-width="2"/></svg>');
+}
+
 /* ===== WEATHER APP STYLES ===== */
 .weather-modal-content {
-    width: 250px;
+    width: 280px;
 }
+
 .weather-app .loading {
     padding: 20px;
     text-align: center;
 }
+
 .weather-app .current-weather {
     text-align: center;
     padding: 10px;
     border-bottom: 1px solid #808080;
     margin-bottom: 5px;
 }
+
 .weather-app .current-location {
     font-weight: bold;
     font-size: 12px;
 }
+
 .weather-app .current-temp {
     font-size: 28px;
     font-weight: bold;
     margin: 5px 0;
 }
+
 .weather-app .current-condition {
     text-transform: capitalize;
 }
+
 .weather-app .weather-icon {
     font-size: 24px;
 }
+
 .weather-app .weather-details {
     padding: 5px 10px;
     margin-bottom: 5px;
     border-bottom: 1px solid #808080;
 }
+
 .weather-app .detail-item {
     display: flex;
     justify-content: space-between;
     margin-bottom: 2px;
 }
+
 .weather-app .forecast-section h3 {
     padding: 0 10px 5px 10px;
     font-size: 11px;
 }
+
 .weather-app .forecast-container {
     display: flex;
     flex-direction: column;
     gap: 5px;
     padding: 0 10px;
 }
+
 .weather-app .forecast-day {
     display: grid;
-    grid-template-columns: 80px 1fr 40px;
+    grid-template-columns: 100px 1fr 60px;
     align-items: center;
     font-size: 11px;
 }
+
 .weather-app .forecast-day .day-name {
     font-weight: bold;
 }
+
+.weather-app .forecast-day .month-day {
+    font-weight: normal;
+    font-size: 10px;
+}
+
 .weather-app .forecast-day .forecast-icon {
     font-size: 20px;
     text-align: center;
 }
+
 .weather-app .forecast-day .forecast-temps {
     text-align: right;
 }
+
 .weather-app .forecast-temps .low {
     color: #666;
     margin-left: 5px;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .desktop-icon {
+        width: 60px;
+        height: 60px;
+    }
+    
+    .desktop-icon img {
+        width: 32px;
+        height: 32px;
+    }
+    
+    .modal-content {
+        max-width: 90vw;
+    }
+    
+    .solitaire-modal-content {
+        width: 90vw;
+        height: 80vh;
+    }
+    
+    .pile {
+        width: 60px;
+        height: 85px;
+    }
+    
+    .card {
+        width: 60px;
+        height: 85px;
+    }
 }
