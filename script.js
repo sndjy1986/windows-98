@@ -259,6 +259,11 @@ let sol_waste = [];
 let sol_foundations = [[], [], [], []];
 let sol_tableau = [[], [], [], [], [], [], []];
 let sol_draggedInfo = null;
+let sol_score = 0;
+let sol_moves = 0;
+let sol_time = 0;
+let sol_timerInterval = null;
+let sol_drawMode = 3; // Draw 3 cards at a time
 
 function openSolitaireApp() {
     hideAllMenus();
@@ -276,6 +281,10 @@ function closeSolitaireApp() {
     const modal = document.getElementById('solitaireModal');
     if (modal) modal.style.display = 'none';
     removeAppFromTaskbar('solitaire');
+    if (sol_timerInterval) {
+        clearInterval(sol_timerInterval);
+        sol_timerInterval = null;
+    }
 }
 
 function initSolitaire() {
@@ -283,6 +292,13 @@ function initSolitaire() {
     sol_waste = [];
     sol_foundations = [[], [], [], []];
     sol_tableau = [[], [], [], [], [], [], []];
+    sol_score = 0;
+    sol_moves = 0;
+    sol_time = 0;
+    
+    // Clear and restart timer
+    if (sol_timerInterval) clearInterval(sol_timerInterval);
+    sol_timerInterval = setInterval(updateSolitaireTimer, 1000);
     
     const deck = [];
     for (let suit of SOLITAIRE_SUITS) {
@@ -312,7 +328,24 @@ function initSolitaire() {
     });
     
     sol_stock = deck;
+    updateSolitaireStatus();
     renderSolitaireBoard();
+}
+
+function updateSolitaireTimer() {
+    sol_time++;
+    updateSolitaireStatus();
+}
+
+function updateSolitaireStatus() {
+    const scoreEl = document.getElementById('sol-score');
+    const timeEl = document.getElementById('sol-time');
+    if (scoreEl) scoreEl.textContent = sol_score;
+    if (timeEl) {
+        const mins = Math.floor(sol_time / 60);
+        const secs = sol_time % 60;
+        timeEl.textContent = `${mins}:${secs.toString().padStart(2, '0')}`;
+    }
 }
 
 function renderSolitaireBoard() {
@@ -334,7 +367,8 @@ function renderSolitaireBoard() {
         if (!pileEl) return;
         pileEl.innerHTML = '';
         if (pile.length > 0) {
-            pileEl.appendChild(createSolitaireCard(pile[pile.length - 1], 'foundation', i));
+            const topCard = pile[pile.length - 1];
+            pileEl.appendChild(createSolitaireCard(topCard, 'foundation', i));
         }
     });
     
@@ -346,15 +380,26 @@ function renderSolitaireBoard() {
             const stockCard = createSolitaireCard({ faceUp: false }, 'stock');
             stockCard.addEventListener('click', handleStockClick);
             stockEl.appendChild(stockCard);
+        } else if (sol_waste.length > 0) {
+            // Show refresh icon when stock is empty
+            const refreshCard = document.createElement('div');
+            refreshCard.className = 'card refresh';
+            refreshCard.addEventListener('click', handleStockClick);
+            stockEl.appendChild(refreshCard);
         }
     }
     
-    // Render waste
+    // Render waste (show up to 3 cards)
     const wasteEl = document.getElementById('waste-pile');
     if (wasteEl) {
         wasteEl.innerHTML = '';
-        if (sol_waste.length > 0) {
-            wasteEl.appendChild(createSolitaireCard(sol_waste[sol_waste.length - 1], 'waste'));
+        const cardsToShow = Math.min(3, sol_waste.length);
+        for (let i = sol_waste.length - cardsToShow; i < sol_waste.length; i++) {
+            const card = sol_waste[i];
+            const cardEl = createSolitaireCard(card, 'waste', -1, i);
+            const offset = (i - (sol_waste.length - cardsToShow)) * 15;
+            cardEl.style.left = `${offset}px`;
+            wasteEl.appendChild(cardEl);
         }
     }
 }
@@ -364,12 +409,56 @@ function createSolitaireCard(card, source, pileIndex = -1, cardIndex = -1) {
     cardEl.className = 'card';
     
     if (card.faceUp) {
-        let val = card.value === 'T' ? '10' : card.value;
-        cardEl.style.backgroundImage = `url('https://deckofcardsapi.com/static/img/${val}${card.suit}.png')`;
+        // Display the card face
+        const color = (card.suit === 'H' || card.suit === 'D') ? 'red' : 'black';
+        const suitSymbol = {
+            'H': '♥', 'D': '♦', 'C': '♣', 'S': '♠'
+        }[card.suit];
+        const displayValue = card.value === 'T' ? '10' : card.value;
+        
+        cardEl.innerHTML = `
+            <div class="card-face ${color}">
+                <div class="card-corner top-left">
+                    <div>${displayValue}</div>
+                    <div>${suitSymbol}</div>
+                </div>
+                <div class="card-center">${suitSymbol}</div>
+                <div class="card-corner bottom-right">
+                    <div>${displayValue}</div>
+                    <div>${suitSymbol}</div>
+                </div>
+            </div>
+        `;
+        
         cardEl.draggable = true;
         cardEl.addEventListener('dragstart', (e) => {
-            sol_draggedInfo = { card, source, pileIndex, cardIndex };
-            e.dataTransfer.setData('text/plain', '');
+            // For waste pile, only allow dragging the top card
+            if (source === 'waste' && cardIndex !== sol_waste.length - 1) {
+                e.preventDefault();
+                return;
+            }
+            sol_draggedInfo = { cards: [card], source, pileIndex, cardIndex };
+            
+            // For tableau, include all face-up cards below
+            if (source === 'tableau') {
+                const cardsToMove = [];
+                for (let i = cardIndex; i < sol_tableau[pileIndex].length; i++) {
+                    cardsToMove.push(sol_tableau[pileIndex][i]);
+                }
+                sol_draggedInfo.cards = cardsToMove;
+            }
+            
+            e.dataTransfer.effectAllowed = 'move';
+            cardEl.style.opacity = '0.5';
+        });
+        
+        cardEl.addEventListener('dragend', (e) => {
+            cardEl.style.opacity = '1';
+        });
+        
+        // Add double-click to auto-move to foundation
+        cardEl.addEventListener('dblclick', () => {
+            autoMoveToFoundation(card, source, pileIndex);
         });
     } else {
         cardEl.classList.add('back');
@@ -378,51 +467,168 @@ function createSolitaireCard(card, source, pileIndex = -1, cardIndex = -1) {
     return cardEl;
 }
 
+function autoMoveToFoundation(card, source, pileIndex) {
+    for (let i = 0; i < 4; i++) {
+        if (canPlaceOnFoundation(card, i)) {
+            // Remove from source
+            if (source === 'waste') {
+                sol_waste.pop();
+            } else if (source === 'tableau') {
+                sol_tableau[pileIndex].pop();
+                // Flip next card if needed
+                if (sol_tableau[pileIndex].length > 0 && 
+                    !sol_tableau[pileIndex][sol_tableau[pileIndex].length - 1].faceUp) {
+                    sol_tableau[pileIndex][sol_tableau[pileIndex].length - 1].faceUp = true;
+                    sol_score += 5;
+                }
+            }
+            
+            // Add to foundation
+            sol_foundations[i].push(card);
+            sol_score += 10;
+            sol_moves++;
+            updateSolitaireStatus();
+            renderSolitaireBoard();
+            checkWinCondition();
+            break;
+        }
+    }
+}
+
+function canPlaceOnFoundation(card, foundIndex) {
+    const foundation = sol_foundations[foundIndex];
+    if (foundation.length === 0) {
+        return card.value === 'A';
+    }
+    const topCard = foundation[foundation.length - 1];
+    const valueIndex = SOLITAIRE_VALUES.indexOf(card.value);
+    const topValueIndex = SOLITAIRE_VALUES.indexOf(topCard.value);
+    return card.suit === topCard.suit && valueIndex === topValueIndex + 1;
+}
+
+function canPlaceOnTableau(cards, tableauIndex) {
+    const targetPile = sol_tableau[tableauIndex];
+    const cardToPlace = cards[0];
+    
+    if (targetPile.length === 0) {
+        return cardToPlace.value === 'K';
+    }
+    
+    const topCard = targetPile[targetPile.length - 1];
+    if (!topCard.faceUp) return false;
+    
+    const cardColor = (cardToPlace.suit === 'H' || cardToPlace.suit === 'D') ? 'red' : 'black';
+    const topColor = (topCard.suit === 'H' || topCard.suit === 'D') ? 'red' : 'black';
+    
+    if (cardColor === topColor) return false;
+    
+    const valueIndex = SOLITAIRE_VALUES.indexOf(cardToPlace.value);
+    const topValueIndex = SOLITAIRE_VALUES.indexOf(topCard.value);
+    
+    return valueIndex === topValueIndex - 1;
+}
+
 function handleStockClick() {
     if (sol_stock.length > 0) {
-        const card = sol_stock.pop();
-        card.faceUp = true;
-        sol_waste.push(card);
+        // Draw cards from stock
+        const cardsToDraw = Math.min(sol_drawMode, sol_stock.length);
+        for (let i = 0; i < cardsToDraw; i++) {
+            const card = sol_stock.pop();
+            card.faceUp = true;
+            sol_waste.push(card);
+        }
     } else if (sol_waste.length > 0) {
+        // Reset stock from waste
         sol_stock = sol_waste.reverse().map(c => ({...c, faceUp: false}));
         sol_waste = [];
+        if (sol_score > 0) sol_score = Math.max(0, sol_score - 100);
     }
+    sol_moves++;
+    updateSolitaireStatus();
     renderSolitaireBoard();
 }
 
 function setupSolitaireDragDrop() {
     document.querySelectorAll('.pile').forEach(pile => {
-        pile.addEventListener('dragover', e => e.preventDefault());
+        pile.addEventListener('dragover', e => {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+        });
+        
         pile.addEventListener('drop', e => {
             e.preventDefault();
+            if (!sol_draggedInfo) return;
+            
             const targetClass = e.currentTarget.classList;
-            let targetInfo = {};
             
             if (targetClass.contains('tableau')) {
-                targetInfo = { 
-                    source: 'tableau', 
-                    pileIndex: parseInt(e.currentTarget.dataset.tableauIndex) 
-                };
-            }
-            if (targetClass.contains('foundation')) {
-                targetInfo = { 
-                    source: 'foundation', 
-                    pileIndex: parseInt(e.currentTarget.dataset.foundationIndex) 
-                };
+                const targetIndex = parseInt(e.currentTarget.dataset.tableauIndex);
+                if (canPlaceOnTableau(sol_draggedInfo.cards, targetIndex)) {
+                    executeMove('tableau', targetIndex);
+                }
+            } else if (targetClass.contains('foundation')) {
+                const targetIndex = parseInt(e.currentTarget.dataset.foundationIndex);
+                if (sol_draggedInfo.cards.length === 1 && 
+                    canPlaceOnFoundation(sol_draggedInfo.cards[0], targetIndex)) {
+                    executeMove('foundation', targetIndex);
+                }
             }
             
-            if (sol_draggedInfo && targetInfo.source) {
-                handleSolitaireDrop(targetInfo);
-            }
+            sol_draggedInfo = null;
         });
     });
 }
 
-function handleSolitaireDrop(targetInfo) {
-    // Simple drop logic - to be expanded
-    console.log("Card dropped on:", targetInfo);
+function executeMove(targetType, targetIndex) {
+    const { cards, source, pileIndex } = sol_draggedInfo;
+    
+    // Remove cards from source
+    if (source === 'waste') {
+        sol_waste.pop();
+    } else if (source === 'tableau') {
+        const removeCount = cards.length;
+        for (let i = 0; i < removeCount; i++) {
+            sol_tableau[pileIndex].pop();
+        }
+        // Flip next card if needed
+        if (sol_tableau[pileIndex].length > 0 && 
+            !sol_tableau[pileIndex][sol_tableau[pileIndex].length - 1].faceUp) {
+            sol_tableau[pileIndex][sol_tableau[pileIndex].length - 1].faceUp = true;
+            sol_score += 5;
+        }
+    } else if (source === 'foundation') {
+        sol_foundations[pileIndex].pop();
+        sol_score = Math.max(0, sol_score - 15);
+    }
+    
+    // Add cards to target
+    if (targetType === 'tableau') {
+        cards.forEach(card => sol_tableau[targetIndex].push(card));
+        if (source === 'waste') sol_score += 5;
+    } else if (targetType === 'foundation') {
+        sol_foundations[targetIndex].push(cards[0]);
+        sol_score += 10;
+    }
+    
+    sol_moves++;
+    updateSolitaireStatus();
     renderSolitaireBoard();
-    sol_draggedInfo = null;
+    checkWinCondition();
+}
+
+function checkWinCondition() {
+    const totalInFoundations = sol_foundations.reduce((sum, f) => sum + f.length, 0);
+    if (totalInFoundations === 52) {
+        alert(`Congratulations! You won!\nScore: ${sol_score}\nTime: ${Math.floor(sol_time / 60)}:${(sol_time % 60).toString().padStart(2, '0')}`);
+        initSolitaire();
+    }
+}
+
+function toggleSolitaireDrawMode() {
+    sol_drawMode = sol_drawMode === 3 ? 1 : 3;
+    const btn = document.querySelector('.sol-draw-mode');
+    if (btn) btn.textContent = `Draw ${sol_drawMode}`;
+    initSolitaire();
 }
 
 // ===== WEATHER APP =====
@@ -786,3 +992,4 @@ function handleImportFile(event) {
     
     // Reset the input value to allow re-importing the same file
     event.target.value = '';
+}
