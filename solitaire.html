@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solitaire</title>
+    <style>
+        body {
+            font-family: 'MS Sans Serif', sans-serif;
+            background-color: #008080;
+            color: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        #game-board {
+            display: grid;
+            grid-template-columns: repeat(7, 100px);
+            gap: 10px;
+            padding: 20px;
+            background: #c0c0c0;
+            border: 2px outset #c0c0c0;
+        }
+
+        .pile {
+            width: 90px;
+            height: 120px;
+            border: 1px solid #808080;
+            position: relative;
+        }
+
+        .card {
+            width: 90px;
+            height: 120px;
+            position: absolute;
+            border: 1px solid #000;
+            border-radius: 5px;
+            background-color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .card.red {
+            color: red;
+        }
+
+        .card.black {
+            color: black;
+        }
+
+        .card.hidden {
+            background-color: #808080;
+            color: transparent;
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <h1>Solitaire</h1>
+        <div id="game-board">
+            <div id="stock" class="pile"></div>
+            <div id="waste" class="pile"></div>
+            <div id="foundation-0" class="pile"></div>
+            <div id="foundation-1" class="pile"></div>
+            <div id="foundation-2" class="pile"></div>
+            <div id="foundation-3" class="pile"></div>
+            <div id="tableau-0" class="pile"></div>
+            <div id="tableau-1" class="pile"></div>
+            <div id="tableau-2" class="pile"></div>
+            <div id="tableau-3" class="pile"></div>
+            <div id="tableau-4" class="pile"></div>
+            <div id="tableau-5" class="pile"></div>
+            <div id="tableau-6" class="pile"></div>
+        </div>
+    </div>
+    <script>
+        const suits = ['♥', '♦', '♣', '♠'];
+        const values = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
+
+        class Card {
+            constructor(suit, value) {
+                this.suit = suit;
+                this.value = value;
+                this.hidden = false;
+            }
+
+            get color() {
+                return this.suit === '♣' || this.suit === '♠' ? 'black' : 'red';
+            }
+
+            render() {
+                const cardElement = document.createElement('div');
+                cardElement.innerText = this.suit + this.value;
+                cardElement.classList.add('card', this.color);
+                if (this.hidden) {
+                    cardElement.classList.add('hidden');
+                }
+                return cardElement;
+            }
+        }
+
+        class Deck {
+            constructor() {
+                this.cards = [];
+                this.createDeck();
+                this.shuffle();
+            }
+
+            createDeck() {
+                for (const suit of suits) {
+                    for (const value of values) {
+                        this.cards.push(new Card(suit, value));
+                    }
+                }
+            }
+
+            shuffle() {
+                for (let i = this.cards.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [this.cards[i], this.cards[j]] = [this.cards[j], this.cards[i]];
+                }
+            }
+
+            deal() {
+                return this.cards.pop();
+            }
+        }
+
+        function initGame() {
+            const deck = new Deck();
+            const gameBoard = document.getElementById('game-board');
+
+            // Deal to tableau
+            for (let i = 0; i < 7; i++) {
+                const tableauPile = document.getElementById(`tableau-${i}`);
+                for (let j = 0; j < i + 1; j++) {
+                    const card = deck.deal();
+                    if (j < i) {
+                        card.hidden = true;
+                    }
+                    tableauPile.appendChild(card.render());
+                }
+            }
+
+            // Deal to stock
+            const stockPile = document.getElementById('stock');
+            deck.cards.forEach(card => {
+                card.hidden = true;
+                stockPile.appendChild(card.render());
+            });
+        }
+
+        initGame();
+    </script>
+</body>
+</html>
