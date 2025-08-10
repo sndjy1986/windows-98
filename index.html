@@ -11,7 +11,7 @@
 
     <div class="taskbar">
         <div class="taskbar-left">
-            <button class="start-button" onclick="toggleStartMenu()">
+            <button class="start-button" id="startButton">
                 <img src="https://win98icons.alexmeub.com/icons/png/windows-0.png" alt="" width="20" height="20">
                 <span>Start</span>
             </button>
@@ -24,116 +24,55 @@
     </div>
 
     <div class="start-menu" id="startMenu">
-        <div class="start-menu-item" onclick="openSolitaireApp()">
+        <div class="start-menu-item" id="startMenuSolitaire">
             <img src="https://win98icons.alexmeub.com/icons/png/card_deck.png" alt="Solitaire" width="24" height="24">
             <span>Solitaire</span>
         </div>
-        <div class="start-menu-item" onclick="openWeatherApp()">
+        <div class="start-menu-item" id="startMenuWeather">
             <img src="https://win98icons.alexmeub.com/icons/png/weather-2.png" alt="Weather" width="24" height="24">
             <span>Weather</span>
         </div>
         <div class="start-menu-separator"></div>
-        <div class="start-menu-item" onclick="requireAdminAuth(() => addNewIcon())">
+        <div class="start-menu-item" id="startMenuAddIcon">
             <img src="https://win98icons.alexmeub.com/icons/png/template_empty-1.png" alt="Add Icon" width="24" height="24">
             <span>Add New Icon</span>
         </div>
-        <div class="start-menu-item" onclick="requireAdminAuth(() => exportConfig())">
+        <div class="start-menu-item" id="startMenuExport">
              <img src="https://win98icons.alexmeub.com/icons/png/save_all-0.png" alt="Export" width="24" height="24">
             <span>Export Config</span>
         </div>
-        <div class="start-menu-item" onclick="requireAdminAuth(() => importConfig())">
+        <div class="start-menu-item" id="startMenuImport">
              <img src="https://win98icons.alexmeub.com/icons/png/directory_open_file_mydocs-2.png" alt="Import" width="24" height="24">
             <span>Import Config</span>
         </div>
     </div>
 
     <div class="context-menu" id="contextMenu">
-        <div class="context-menu-item" onclick="requireAdminAuth(() => addNewIcon())">Add New Icon</div>
-        <div class="context-menu-item" onclick="requireAdminAuth(() => editIcon(currentIcon))">Edit Icon</div>
-        <div class="context-menu-item" onclick="requireAdminAuth(() => deleteIcon(currentIcon))">Delete Icon</div>
+        <div id="contextMenuAddIcon" class="context-menu-item">Add New Icon</div>
+        <div id="contextMenuEdit" class="context-menu-item">Edit Icon</div>
+        <div id="contextMenuDelete" class="context-menu-item">Delete Icon</div>
     </div>
 
-    <input type="file" id="importFile" accept=".json" style="display: none;" onchange="handleImportFile(event)">
+    <input type="file" id="importFile" accept=".json" style="display: none;">
 
     <div class="modal" id="solitaireModal">
-        <div class="modal-content solitaire-modal-content">
-            <div class="modal-header">
-                <span>Solitaire</span>
-                <button class="modal-close" onclick="closeSolitaireApp()">×</button>
-            </div>
-            <div class="modal-body solitaire-body">
-                <div class="solitaire-top-bar">
-                    <button onclick="initSolitaire()">New Game</button>
-                </div>
-                <div id="solitaire-game-board">
-                    <div class="solitaire-top-piles">
-                        <div class="solitaire-stock-waste">
-                            <div class="pile stock" id="stock-pile"></div>
-                            <div class="pile waste" id="waste-pile"></div>
-                        </div>
-                        <div class="solitaire-foundations">
-                            <div class="pile foundation" data-foundation-index="0"></div>
-                            <div class="pile foundation" data-foundation-index="1"></div>
-                            <div class="pile foundation" data-foundation-index="2"></div>
-                            <div class="pile foundation" data-foundation-index="3"></div>
-                        </div>
-                    </div>
-                    <div class="solitaire-tableau-piles">
-                        <div class="pile tableau" data-tableau-index="0"></div>
-                        <div class="pile tableau" data-tableau-index="1"></div>
-                        <div class="pile tableau" data-tableau-index="2"></div>
-                        <div class="pile tableau" data-tableau-index="3"></div>
-                        <div class="pile tableau" data-tableau-index="4"></div>
-                        <div class="pile tableau" data-tableau-index="5"></div>
-                        <div class="pile tableau" data-tableau-index="6"></div>
-                    </div>
-                </div>
-            </div>
         </div>
-    </div>
 
     <div class="modal" id="weatherModal">
-        <div class="modal-content weather-modal-content">
-            <div class="modal-header">
-                <span>Weather</span>
-                <button class="modal-close" onclick="closeWeatherApp()">×</button>
-            </div>
-            <div class="modal-body weather-app">
-                <div id="weatherLoading" class="loading">Loading weather data...</div>
-                <div id="weatherContent" style="display: none;">
-                    <div class="current-weather">
-                        <div class="current-location" id="currentLocation"></div>
-                        <div class="current-temp" id="currentTemp"></div>
-                        <div class="current-condition" id="currentCondition"></div>
-                        <div id="currentWeatherIcon" class="weather-icon"></div>
-                    </div>
-                    <div class="weather-details">
-                        <div class="detail-item"><span>Feels Like</span><span id="feelsLike"></span></div>
-                        <div class="detail-item"><span>Humidity</span><span id="humidity"></span></div>
-                        <div class="detail-item"><span>Wind</span><span id="windSpeed"></span></div>
-                        <div class="detail-item"><span>Pressure</span><span id="pressure"></span></div>
-                    </div>
-                    <div class="forecast-section">
-                        <h3>3-Day Forecast</h3>
-                        <div class="forecast-container" id="forecastContainer"></div>
-                    </div>
-                </div>
-            </div>
         </div>
-    </div>
 
     <div class="modal" id="adminModal">
         <div class="modal-content">
              <div class="modal-header">
                 <span>Administrator Access</span>
-                <button class="modal-close" onclick="closeAdminModal()">×</button>
+                <button class="modal-close" id="adminCancelButton">×</button>
             </div>
             <div class="modal-body">
                 <p>Enter Admin Password:</p>
-                <input type="password" id="adminPassword" onkeypress="if(event.key==='Enter')checkAdminPassword()">
+                <input type="password" id="adminPassword">
                 <div class="button-group">
-                    <button class="button" onclick="closeAdminModal()">Cancel</button>
-                    <button class="button" onclick="checkAdminPassword()">OK</button>
+                    <button class="button" id="adminCancelButton2">Cancel</button>
+                    <button class="button" id="adminOkButton">OK</button>
                 </div>
             </div>
         </div>
@@ -143,7 +82,7 @@
         <div class="modal-content">
              <div class="modal-header">
                 <span id="modalTitle">Edit Icon</span>
-                <button class="modal-close" onclick="closeModal()">×</button>
+                <button class="modal-close" id="iconCancelButton">×</button>
             </div>
             <div class="modal-body">
                  <div class="form-group">
@@ -155,8 +94,8 @@
                     <input type="text" id="iconUrl" placeholder="Enter website URL">
                 </div>
                 <div class="button-group">
-                    <button class="button" onclick="closeModal()">Cancel</button>
-                    <button class="button" onclick="saveIcon()">OK</button>
+                    <button class="button" id="iconCancelButton2">Cancel</button>
+                    <button class="button" id="iconOkButton">OK</button>
                 </div>
             </div>
         </div>
