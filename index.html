@@ -720,8 +720,7 @@
 </head>
 <body>
     <div class="desktop" id="desktop">
-        <!-- Default icons with proper Windows 98 spacing -->
-       <div class="desktop-icon" style="left: 15px; top: 15px;" data-url="https://www.paycomonline.net/v4/ee/web.php/app/login" data-icon="🖥️" data-icon-type="image" data-image-url="https://icons.duckduckgo.com/ip3/paycomonline.net.ico">
+        <div class="desktop-icon" style="left: 15px; top: 15px;" data-url="https://www.paycomonline.net/v4/ee/web.php/app/login" data-icon="🖥️" data-icon-type="image" data-image-url="https://icons.duckduckgo.com/ip3/paycomonline.net.ico">
             <img src="https://icons.duckduckgo.com/ip3/paycomonline.net.ico" style="width: 42px; height: 42px; margin-bottom: 4px;" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
             <div class="icon-emoji" style="display: none;">🖥️</div>
             <span>PayCom Online</span>
@@ -789,8 +788,7 @@
                 Start
             </button>
             <div id="runningApps" class="running-apps">
-                <!-- Running applications will appear here -->
-            </div>
+                </div>
         </div>
         <div style="flex: 1;"></div>
         <div class="system-tray" id="systemTray">
@@ -798,10 +796,12 @@
         </div>
     </div>
 
-    <!-- Start Menu -->
     <div class="start-menu" id="startMenu">
         <div class="start-menu-item" onclick="openWeatherApp()">
             <span>🌤️</span>Weather
+        </div>
+        <div class="start-menu-item" onclick="window.open('solitaire.html', '_blank')">
+            <span>&#127183;</span>Solitaire
         </div>
         <div class="start-menu-item" onclick="requireAdminAuth(() => addNewIcon())">
             <span>📄</span>Add New Icon
@@ -820,7 +820,6 @@
         </div>
     </div>
 
-    <!-- Context Menu -->
     <div class="context-menu" id="contextMenu">
         <div class="context-menu-item" onclick="requireAdminAuth(() => addNewIcon())">Add New Icon</div>
         <div class="context-menu-item" onclick="requireAdminAuth(() => editIcon(currentIcon))">Edit Icon</div>
@@ -829,10 +828,8 @@
         <div class="context-menu-item" onclick="requireAdminAuth(() => importConfig())">Import Config</div>
     </div>
 
-    <!-- Import File Input (hidden) -->
     <input type="file" id="importFile" accept=".json" style="display: none;" onchange="handleImportFile(event)">
 
-    <!-- Weather App Modal -->
     <div class="modal" id="weatherModal">
         <div class="modal-content weather-modal-content">
             <div class="modal-header">
@@ -873,15 +870,13 @@
                     <div class="forecast-section">
                         <div class="forecast-title">3-Day Forecast</div>
                         <div class="forecast-container" id="forecastContainer">
-                            <!-- Forecast days will be populated here -->
-                        </div>
+                            </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Admin Password Modal -->
     <div class="modal" id="adminModal">
         <div class="modal-content">
             <div class="modal-header">
@@ -901,7 +896,6 @@
         </div>
     </div>
 
-    <!-- Modal for adding/editing icons -->
     <div class="modal" id="iconModal">
         <div class="modal-content">
             <div class="modal-header">
@@ -1167,7 +1161,7 @@
         }
 
         function removeAppFromTaskbar(appId) {
-            runningApps = runningApps.filter(app => app.id !== appId);
+            runningApps = runningApps.filter(.app => app.id !== appId);
             updateTaskbar();
         }
 
