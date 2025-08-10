@@ -18,6 +18,7 @@
             </button>
             <div id="runningApps" class="running-apps"></div>
         </div>
+        <div style="flex-grow: 1;"></div> 
         <div class="system-tray">
             <span id="timeDisplay"></span>
         </div>
@@ -106,8 +107,29 @@
         </div>
     </div>
 
-    <div class="modal" id="adminModal"></div>
-    <div class="modal" id="iconModal"></div>
+    <div class="modal" id="adminModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span>Administrator Access</span>
+                <button class="modal-close" onclick="closeAdminModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <p>Enter Admin Password:</p>
+                <input type="password" id="adminPassword">
+                <button onclick="checkAdminPassword()">OK</button>
+            </div>
+        </div>
+    </div>
+    <div class="modal" id="iconModal">
+        <div class="modal-content">
+             <div class="modal-header">
+                <span id="modalTitle">Edit Icon</span>
+                <button class="modal-close" onclick="closeModal()">×</button>
+            </div>
+            <div class="modal-body">
+                 </div>
+        </div>
+    </div>
 
     <script src="script.js"></script>
 </body>
