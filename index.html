@@ -48,31 +48,79 @@
     </div>
 
     <div class="context-menu" id="contextMenu">
-        <div id="contextMenuAddIcon" class="context-menu-item">Add New Icon</div>
-        <div id="contextMenuEdit" class="context-menu-item">Edit Icon</div>
-        <div id="contextMenuDelete" class="context-menu-item">Delete Icon</div>
+        <div class="context-menu-item" id="contextMenuAdd">Add New Icon</div>
+        <div class="context-menu-item" id="contextMenuEdit">Edit Icon</div>
+        <div class="context-menu-item" id="contextMenuDelete">Delete Icon</div>
     </div>
 
     <input type="file" id="importFile" accept=".json" style="display: none;">
 
     <div class="modal" id="solitaireModal">
+        <div class="modal-content solitaire-modal-content">
+            <div class="modal-header">
+                <span>Solitaire</span>
+                <button class="modal-close" id="closeSolitaire">×</button>
+            </div>
+            <div class="modal-body solitaire-body">
+                 <div id="solitaire-game-board">
+                    <div class="solitaire-top-piles">
+                        <div class="solitaire-stock-waste">
+                            <div class="pile stock" id="stock-pile"></div>
+                            <div class="pile waste" id="waste-pile"></div>
+                        </div>
+                        <div class="solitaire-foundations">
+                            <div class="pile foundation" data-foundation-index="0"></div>
+                            <div class="pile foundation" data-foundation-index="1"></div>
+                            <div class="pile foundation" data-foundation-index="2"></div>
+                            <div class="pile foundation" data-foundation-index="3"></div>
+                        </div>
+                    </div>
+                    <div class="solitaire-tableau-piles">
+                        <div class="pile tableau" data-tableau-index="0"></div>
+                        <div class="pile tableau" data-tableau-index="1"></div>
+                        <div class="pile tableau" data-tableau-index="2"></div>
+                        <div class="pile tableau" data-tableau-index="3"></div>
+                        <div class="pile tableau" data-tableau-index="4"></div>
+                        <div class="pile tableau" data-tableau-index="5"></div>
+                        <div class="pile tableau" data-tableau-index="6"></div>
+                    </div>
+                </div>
+            </div>
         </div>
+    </div>
 
     <div class="modal" id="weatherModal">
+        <div class="modal-content weather-modal-content">
+            <div class="modal-header">
+                <span>Weather</span>
+                <button class="modal-close" id="closeWeather">×</button>
+            </div>
+             <div class="modal-body weather-app">
+               <div id="weatherLoading" class="loading">Loading weather data...</div>
+                <div id="weatherContent" style="display: none;">
+                    <div class="current-weather">
+                        <div class="current-location" id="currentLocation"></div>
+                        <div class="current-temp" id="currentTemp"></div>
+                        <div class="current-condition" id="currentCondition"></div>
+                        <div id="currentWeatherIcon" class="weather-icon"></div>
+                    </div>
+                    </div>
+            </div>
         </div>
+    </div>
 
     <div class="modal" id="adminModal">
         <div class="modal-content">
              <div class="modal-header">
                 <span>Administrator Access</span>
-                <button class="modal-close" id="adminCancelButton">×</button>
+                <button class="modal-close" id="closeAdmin">×</button>
             </div>
             <div class="modal-body">
                 <p>Enter Admin Password:</p>
                 <input type="password" id="adminPassword">
                 <div class="button-group">
-                    <button class="button" id="adminCancelButton2">Cancel</button>
-                    <button class="button" id="adminOkButton">OK</button>
+                    <button class="button" id="adminCancel">Cancel</button>
+                    <button class="button" id="adminOk">OK</button>
                 </div>
             </div>
         </div>
@@ -82,20 +130,20 @@
         <div class="modal-content">
              <div class="modal-header">
                 <span id="modalTitle">Edit Icon</span>
-                <button class="modal-close" id="iconCancelButton">×</button>
+                <button class="modal-close" id="closeIconModal">×</button>
             </div>
             <div class="modal-body">
-                 <div class="form-group">
+                <div class="form-group">
                     <label for="iconName">Name:</label>
-                    <input type="text" id="iconName" placeholder="Enter icon name">
+                    <input type="text" id="iconName">
                 </div>
                 <div class="form-group">
                     <label for="iconUrl">URL:</label>
-                    <input type="text" id="iconUrl" placeholder="Enter website URL">
+                    <input type="text" id="iconUrl">
                 </div>
                 <div class="button-group">
-                    <button class="button" id="iconCancelButton2">Cancel</button>
-                    <button class="button" id="iconOkButton">OK</button>
+                    <button class="button" id="iconCancel">Cancel</button>
+                    <button class="button" id="iconOk">OK</button>
                 </div>
             </div>
         </div>
