@@ -15,7 +15,7 @@ body {
     user-select: none;
 }
 
-/* ===== DESKTOP, TASKBAR, ICONS (Existing styles remain) ===== */
+/* ===== DESKTOP & ICONS ===== */
 .desktop {
     position: relative;
     width: 100vw;
@@ -42,6 +42,8 @@ body {
     background: rgba(0,0,128,0.3);
     border: 1px dotted #fff;
 }
+
+/* ===== TASKBAR ===== */
 .taskbar {
     position: fixed;
     bottom: 0;
@@ -53,7 +55,7 @@ body {
     display: flex;
     align-items: center;
     padding: 2px;
-    z-index: 1000;
+    z-index: 2000; /* Increased z-index */
 }
 .start-button {
     height: 26px;
@@ -97,27 +99,32 @@ body {
 }
 
 
-/* ===== START & CONTEXT MENUS (Existing styles remain) ===== */
-.start-menu {
+/* ===== MENUS ===== */
+.start-menu, .context-menu {
     position: fixed;
-    bottom: 32px;
-    left: 2px;
     background: #c0c0c0;
     border: 1px outset #fff;
     box-shadow: 2px 2px 5px rgba(0,0,0,0.5);
     display: none;
-    z-index: 1001;
-    width: 180px;
+    z-index: 2001; /* Higher than taskbar */
     padding: 2px;
 }
-.start-menu-item {
+.start-menu {
+    bottom: 32px;
+    left: 2px;
+    width: 180px;
+}
+.context-menu {
+    min-width: 140px;
+}
+.start-menu-item, .context-menu-item {
     padding: 6px 12px;
     cursor: pointer;
     display: flex;
     align-items: center;
     gap: 8px;
 }
-.start-menu-item:hover {
+.start-menu-item:hover, .context-menu-item:hover {
     background: #000080;
     color: white;
 }
@@ -127,26 +134,16 @@ body {
     border-bottom: 1px solid #fff;
     margin: 2px 0;
 }
-.context-menu {
-    position: fixed;
-    background: #c0c0c0;
-    border: 1px outset #fff;
-    box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
-    display: none;
-    z-index: 1001;
-    min-width: 140px;
-    padding: 2px;
-}
-.context-menu-item:hover {
-    background: #000080;
-    color: white;
-}
 
-/* ===== MODALS (Existing styles remain) ===== */
+
+/* ===== MODALS (WINDOWS) ===== */
 .modal {
-    position: fixed;
+    /* FIX: Restored position properties to make modals appear */
+    position: fixed; 
+    top: 50px;
+    left: 100px;
     display: none;
-    z-index: 999;
+    z-index: 1001; /* Above desktop, below taskbar and menus */
 }
 .modal-content {
     background: #c0c0c0;
@@ -177,8 +174,7 @@ body {
     padding: 10px;
 }
 
-
-/* ===== SOLITAIRE GAME STYLES (Existing styles remain) ===== */
+/* ===== SOLITAIRE GAME STYLES ===== */
 .solitaire-modal-content {
     width: 620px;
     height: 500px;
@@ -212,16 +208,14 @@ body {
     background-size: contain;
 }
 
-/* ===== WEATHER APP STYLES (NEW) ===== */
+/* ===== WEATHER APP STYLES ===== */
 .weather-modal-content {
     width: 250px;
 }
-
 .weather-app .loading {
     padding: 20px;
     text-align: center;
 }
-
 .weather-app .current-weather {
     text-align: center;
     padding: 10px;
@@ -243,7 +237,6 @@ body {
 .weather-app .weather-icon {
     font-size: 24px;
 }
-
 .weather-app .weather-details {
     padding: 5px 10px;
     margin-bottom: 5px;
@@ -254,12 +247,10 @@ body {
     justify-content: space-between;
     margin-bottom: 2px;
 }
-
 .weather-app .forecast-section h3 {
     padding: 0 10px 5px 10px;
     font-size: 11px;
 }
-
 .weather-app .forecast-container {
     display: flex;
     flex-direction: column;
@@ -268,7 +259,7 @@ body {
 }
 .weather-app .forecast-day {
     display: grid;
-    grid-template-columns: 50px 1fr 40px;
+    grid-template-columns: 80px 1fr 40px;
     align-items: center;
     font-size: 11px;
 }
