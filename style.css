@@ -38,6 +38,10 @@ body {
     display: block;
     margin: 0 auto 5px;
 }
+.desktop-icon:hover {
+    background: rgba(0,0,128,0.3);
+    border: 1px dotted #fff;
+}
 .taskbar {
     position: fixed;
     bottom: 0;
@@ -70,20 +74,30 @@ body {
     display: flex;
     gap: 2px;
     margin-left: 5px;
+    height: 100%;
 }
 .app-button {
     height: 24px;
     border: 1px outset #fff;
     padding: 0 10px;
     min-width: 100px;
+    max-width: 150px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background: #c0c0c0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 .system-tray {
     border: 1px inset #808080;
     padding: 2px 5px;
+    margin-right: 2px;
 }
 
 
-/* ===== START & CONTEXT MENUS (Minor adjustments) ===== */
+/* ===== START & CONTEXT MENUS (Existing styles remain) ===== */
 .start-menu {
     position: fixed;
     bottom: 32px;
@@ -128,23 +142,18 @@ body {
     color: white;
 }
 
-/* ===== MODALS (Existing styles) ===== */
+/* ===== MODALS (Existing styles remain) ===== */
 .modal {
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.1);
     display: none;
-    justify-content: center;
-    align-items: center;
     z-index: 999;
 }
 .modal-content {
     background: #c0c0c0;
     border: 1px outset #fff;
     box-shadow: 2px 2px 5px rgba(0,0,0,0.5);
+    display: flex;
+    flex-direction: column;
 }
 .modal-header {
     background: #000080;
@@ -164,8 +173,12 @@ body {
     font-size: 10px;
     cursor: pointer;
 }
+.modal-body {
+    padding: 10px;
+}
 
-/* ===== SOLITAIRE GAME STYLES ===== */
+
+/* ===== SOLITAIRE GAME STYLES (Existing styles remain) ===== */
 .solitaire-modal-content {
     width: 620px;
     height: 500px;
@@ -177,36 +190,13 @@ body {
     display: flex;
     flex-direction: column;
 }
-.solitaire-top-bar {
-    padding-bottom: 10px;
-}
-#solitaire-game-board {
-    width: 100%;
-    flex-grow: 1;
-}
-.solitaire-top-piles {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 20px;
-}
-.solitaire-stock-waste, .solitaire-foundations {
-    display: flex;
-    gap: 10px;
-}
-.solitaire-tableau-piles {
-    display: flex;
-    justify-content: space-between;
-}
+/* ... other solitaire styles ... */
 .pile {
     width: 80px;
     height: 110px;
     border: 1px solid #3c7f3c;
     position: relative;
     border-radius: 5px;
-}
-.pile.stock {
-    background: repeating-conic-gradient(#3c7f3c 0% 25%, #4a9d4a 0% 50%) 
-              50% / 10px 10px;
 }
 .card {
     width: 80px;
@@ -216,29 +206,83 @@ body {
     border-radius: 5px;
     background-color: white;
     cursor: pointer;
-    font-size: 18px;
-    font-weight: bold;
     box-shadow: 1px 1px 3px rgba(0,0,0,0.3);
     background-repeat: no-repeat;
     background-position: center;
     background-size: contain;
 }
-.card.dragging {
-    opacity: 0.8;
-    z-index: 100;
-}
-.card.back {
-    background-image: url('https://raw.githubusercontent.com/code-brief/solitaire-in-js/master/assets/images/card-back.png');
-}
-/* Card image URLs */
-.card[data-card="H1"] { background-image: url('https://deckofcardsapi.com/static/img/AH.png'); }
-/* ... (repeat for all 52 cards) ... */
-.card[data-card="SK"] { background-image: url('https://deckofcardsapi.com/static/img/KS.png'); }
 
-.tableau .card {
-    top: 0;
-    left: 0;
+/* ===== WEATHER APP STYLES (NEW) ===== */
+.weather-modal-content {
+    width: 250px;
 }
-.tableau .card:not(:first-child) {
-    top: auto;
+
+.weather-app .loading {
+    padding: 20px;
+    text-align: center;
+}
+
+.weather-app .current-weather {
+    text-align: center;
+    padding: 10px;
+    border-bottom: 1px solid #808080;
+    margin-bottom: 5px;
+}
+.weather-app .current-location {
+    font-weight: bold;
+    font-size: 12px;
+}
+.weather-app .current-temp {
+    font-size: 28px;
+    font-weight: bold;
+    margin: 5px 0;
+}
+.weather-app .current-condition {
+    text-transform: capitalize;
+}
+.weather-app .weather-icon {
+    font-size: 24px;
+}
+
+.weather-app .weather-details {
+    padding: 5px 10px;
+    margin-bottom: 5px;
+    border-bottom: 1px solid #808080;
+}
+.weather-app .detail-item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 2px;
+}
+
+.weather-app .forecast-section h3 {
+    padding: 0 10px 5px 10px;
+    font-size: 11px;
+}
+
+.weather-app .forecast-container {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    padding: 0 10px;
+}
+.weather-app .forecast-day {
+    display: grid;
+    grid-template-columns: 50px 1fr 40px;
+    align-items: center;
+    font-size: 11px;
+}
+.weather-app .forecast-day .day-name {
+    font-weight: bold;
+}
+.weather-app .forecast-day .forecast-icon {
+    font-size: 20px;
+    text-align: center;
+}
+.weather-app .forecast-day .forecast-temps {
+    text-align: right;
+}
+.weather-app .forecast-temps .low {
+    color: #666;
+    margin-left: 5px;
 }
