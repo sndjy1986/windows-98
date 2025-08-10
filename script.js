@@ -1,14 +1,3 @@
-Coding partner
-
-Show thinking
-Yes, that's correct! You should keep all the code from that point onward in the script.js file. That comment was meant to show where the new Solitaire code ends and the existing Weather app code begins.
-
-However, to make it much easier and to ensure there are no mistakes, here is the complete and final script.js file with everything combined. You can just replace the entire contents of your script.js file with this code.
-
-Complete script.js
-JavaScript
-
-// ===== GLOBAL VARIABLES =====
 let draggedIcon = null;
 let currentIcon = null;
 let iconCounter = 0;
