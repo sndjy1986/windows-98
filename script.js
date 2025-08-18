@@ -69,6 +69,10 @@ function setupEventListeners() {
     document.getElementById('contextMenuAdd').addEventListener('click', () => requireAdminAuth(addNewIcon));
     document.getElementById('contextMenuEdit').addEventListener('click', () => requireAdminAuth(() => editIcon(currentIcon)));
     document.getElementById('contextMenuDelete').addEventListener('click', () => requireAdminAuth(() => deleteIcon(currentIcon)));
+    document.getElementById('contextMenuArrange').addEventListener('click', () => {
+        autoArrangeIcons();
+        hideAllMenus();
+    });
     
     document.getElementById('closeSolitaire').addEventListener('click', closeSolitaireApp);
     document.getElementById('closeWeather').addEventListener('click', closeWeatherApp);
@@ -270,16 +274,39 @@ function createIconElement(iconData) {
 
 function autoArrangeIcons() {
     const desktop = document.getElementById('desktop');
-    const icons = Array.from(desktop.children);
-    const iconHeight = 85, iconWidth = 85, paddingTop = 10, paddingLeft = 10;
-    if (desktop.clientHeight <= 0) return;
-    const iconsPerCol = Math.floor((desktop.clientHeight - paddingTop) / iconHeight);
+    const icons = Array.from(desktop.querySelectorAll('.desktop-icon'));
+    
+    if (icons.length === 0) return;
+    
+    const iconHeight = 85;
+    const iconWidth = 85; 
+    const paddingTop = 10;
+    const paddingLeft = 10;
+    const desktopHeight = desktop.clientHeight;
+    const desktopWidth = desktop.clientWidth;
+    
+    if (desktopHeight <= 0) return;
+    
+    // Calculate how many icons can fit vertically
+    const iconsPerCol = Math.floor((desktopHeight - paddingTop) / iconHeight);
     if (iconsPerCol <= 0) return;
+    
+    // Calculate how many columns we need
+    const totalCols = Math.ceil(icons.length / iconsPerCol);
+    
     icons.forEach((icon, index) => {
         const col = Math.floor(index / iconsPerCol);
         const row = index % iconsPerCol;
-        icon.style.top = `${paddingTop + row * iconHeight}px`;
-        icon.style.left = `${paddingLeft + col * iconWidth}px`;
+        
+        const leftPos = paddingLeft + (col * iconWidth);
+        const topPos = paddingTop + (row * iconHeight);
+        
+        // Make sure icons don't go off screen
+        if (leftPos + iconWidth <= desktopWidth - 220) { // Leave space for weather text
+            icon.style.left = leftPos + 'px';
+            icon.style.top = topPos + 'px';
+            icon.style.position = 'absolute';
+        }
     });
 }
 
