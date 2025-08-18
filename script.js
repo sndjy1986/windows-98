@@ -31,43 +31,12 @@ document.addEventListener('DOMContentLoaded', function() {
         fetchWeatherData();
         setInterval(fetchWeatherData, 600000);
         loadInitialIcons();
-       function autoArrangeIcons() {
-    const desktop = document.getElementById('desktop');
-    const icons = Array.from(desktop.querySelectorAll('.desktop-icon'));
-    
-    if (icons.length === 0) return;
-    
-    const iconHeight = 85;
-    const iconWidth = 85; 
-    const paddingTop = 10;
-    const paddingLeft = 10;
-    const desktopHeight = desktop.clientHeight;
-    const desktopWidth = desktop.clientWidth;
-    
-    if (desktopHeight <= 0) return;
-    
-    // Calculate how many icons can fit vertically
-    const iconsPerCol = Math.floor((desktopHeight - paddingTop) / iconHeight);
-    if (iconsPerCol <= 0) return;
-    
-    // Calculate how many columns we need
-    const totalCols = Math.ceil(icons.length / iconsPerCol);
-    
-    icons.forEach((icon, index) => {
-        const col = Math.floor(index / iconsPerCol);
-        const row = index % iconsPerCol;
-        
-        const leftPos = paddingLeft + (col * iconWidth);
-        const topPos = paddingTop + (row * iconHeight);
-        
-        // Make sure icons don't go off screen
-        if (leftPos + iconWidth <= desktopWidth - 220) { // Leave space for weather text
-            icon.style.left = leftPos + 'px';
-            icon.style.top = topPos + 'px';
-            icon.style.position = 'absolute';
-        }
-    });
-}
+        autoArrangeIcons(); // Initial call to arrange icons
+        window.addEventListener('resize', autoArrangeIcons); // Re-arrange on window resize
+    } catch (error) {
+        console.error('Initialization error:', error);
+    }
+});
 
 // ===== EVENT LISTENERS SETUP =====
 function setupEventListeners() {
@@ -269,7 +238,7 @@ function loadInitialIcons() {
         { name: 'FoxCarolina', url: 'http://www.foxcarolina.com', id: 'foxcarolina', iconUrl: 'https://icons.duckduckgo.com/ip3/foxcarolina.com.ico' },
         { name: 'Remote Desk', url: 'https://remotedesktop.google.com/', id: 'remote-desk', iconUrl: 'https://icons.duckduckgo.com/ip3/remotedesktop.google.com.ico' },
         { name: 'Coroner Sched', url: 'https://drive.google.com/file/d/1i2Pybwtw5h-tDiBGzM1QLVQumYZx0Ubz/view?usp=drive_link', id: 'coroner-sched', iconUrl: 'https://icons.duckduckgo.com/ip3/dead.net.ico' },
-        // Additional icons that were mistakenly in start menu
+        // Additional icons
         { name: 'Gmail', url: 'https://mail.google.com', id: 'gmail', iconUrl: 'https://icons.duckduckgo.com/ip3/gmail.google.com.ico' },
         { name: 'Slack', url: 'https://slack.com', id: 'slack', iconUrl: 'https://icons.duckduckgo.com/ip3/slack.com.ico' },
         { name: 'GitHub', url: 'https://github.com', id: 'github', iconUrl: 'https://icons.duckduckgo.com/ip3/github.com.ico' },
@@ -301,18 +270,42 @@ function createIconElement(iconData) {
 
 function autoArrangeIcons() {
     const desktop = document.getElementById('desktop');
-    const icons = Array.from(desktop.children);
-    const iconHeight = 85, iconWidth = 85, paddingTop = 10, paddingLeft = 10;
-    if (desktop.clientHeight <= 0) return;
-    const iconsPerCol = Math.floor((desktop.clientHeight - paddingTop) / iconHeight);
+    const icons = Array.from(desktop.querySelectorAll('.desktop-icon'));
+    
+    if (icons.length === 0) return;
+    
+    const iconHeight = 85;
+    const iconWidth = 85; 
+    const paddingTop = 10;
+    const paddingLeft = 10;
+    const desktopHeight = desktop.clientHeight;
+    const desktopWidth = desktop.clientWidth;
+    
+    if (desktopHeight <= 0) return;
+    
+    // Calculate how many icons can fit vertically
+    const iconsPerCol = Math.floor((desktopHeight - paddingTop) / iconHeight);
     if (iconsPerCol <= 0) return;
+    
+    // Calculate how many columns we need
+    const totalCols = Math.ceil(icons.length / iconsPerCol);
+    
     icons.forEach((icon, index) => {
         const col = Math.floor(index / iconsPerCol);
         const row = index % iconsPerCol;
-        icon.style.top = `${paddingTop + row * iconHeight}px`;
-        icon.style.left = `${paddingLeft + col * iconWidth}px`;
+        
+        const leftPos = paddingLeft + (col * iconWidth);
+        const topPos = paddingTop + (row * iconHeight);
+        
+        // Make sure icons don't go off screen and leave space for weather text
+        if (leftPos + iconWidth <= desktopWidth - 220) { 
+            icon.style.left = leftPos + 'px';
+            icon.style.top = topPos + 'px';
+            icon.style.position = 'absolute';
+        }
     });
 }
+
 
 // ===== SOLITAIRE GAME LOGIC =====
 const SOLITAIRE_SUITS = { H: "red", D: "red", C: "black", S: "black" };
