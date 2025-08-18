@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', function() {
         setupModalDragging('solitaireModal');
         setupModalDragging('adminModal');
         setupModalDragging('iconModal');
-        setupWidgetDragging('weatherWidget');
+        setupWeatherTextDragging();
         fetchWeatherData();
         setInterval(fetchWeatherData, 600000);
         loadInitialIcons();
@@ -150,28 +150,29 @@ function setupModalDragging(modalId) {
     };
 }
 
-function setupWidgetDragging(widgetId) {
-    const widget = document.getElementById(widgetId);
-    if (!widget) return;
-    const header = widget.querySelector('.weather-widget-header');
-    if (!header) return;
+function setupWeatherTextDragging() {
+    const weatherText = document.getElementById('weatherText');
+    if (!weatherText) return;
     let isDragging = false, offset = { x: 0, y: 0 };
-    header.style.cursor = 'move';
-    header.onmousedown = (e) => {
+    
+    weatherText.onmousedown = (e) => {
         isDragging = true;
-        offset = { x: e.clientX - widget.offsetLeft, y: e.clientY - widget.offsetTop };
-        header.style.cursor = 'grabbing';
+        offset = { x: e.clientX - weatherText.offsetLeft, y: e.clientY - weatherText.offsetTop };
+        weatherText.style.cursor = 'grabbing';
     };
+    
     document.onmousemove = (e) => {
         if (!isDragging) return;
         let newX = e.clientX - offset.x;
         let newY = e.clientY - offset.y;
-        widget.style.left = `${Math.max(0, newX)}px`;
-        widget.style.top = `${Math.max(0, newY)}px`;
+        weatherText.style.left = `${Math.max(0, newX)}px`;
+        weatherText.style.top = `${Math.max(0, newY)}px`;
+        weatherText.style.right = 'auto'; // Remove right positioning when dragged
     };
+    
     document.onmouseup = () => {
         isDragging = false;
-        header.style.cursor = 'move';
+        weatherText.style.cursor = 'move';
     };
 }
 
@@ -419,7 +420,7 @@ async function fetchWeatherData() {
 function updateWeatherWidget() {
     if (!weatherData) return;
     
-    const widgetContent = document.getElementById('weatherWidgetContent');
+    const weatherText = document.getElementById('weatherText');
     const current = weatherData;
     
     // Get today's high/low from forecast
@@ -461,26 +462,16 @@ function updateWeatherWidget() {
             const low = Math.round(day.main.temp_min);
             const condition = day.weather[0].main;
             
-            return `
-                <div class="weather-day">
-                    <div class="weather-day-name">${dayName}</div>
-                    <div class="weather-day-condition">${condition}</div>
-                    <div class="weather-day-temps">${high}°/${low}°</div>
-                </div>
-            `;
+            return `<div class="weather-day">${dayName}: ${condition} ${high}°/${low}°</div>`;
         }).join('');
     }
     
-    widgetContent.innerHTML = `
-        <div class="weather-current">
-            <div class="weather-location">Anderson, SC</div>
-            <div class="weather-temp">Temp: ${todayHigh}°/${todayLow}°</div>
-            <div class="weather-condition">${current.weather[0].description}</div>
-        </div>
-        <div class="weather-forecast">
-            <div class="weather-forecast-title">3 Day Forecast</div>
-            ${forecastHTML}
-        </div>
+    weatherText.innerHTML = `
+        <div class="weather-location">Anderson, SC</div>
+        <div class="weather-temp">Temp: ${todayHigh}°/${todayLow}°</div>
+        <div class="weather-condition">${current.weather[0].description}</div>
+        <div class="weather-forecast-title">3 Day Forecast</div>
+        ${forecastHTML}
     `;
 }
 
