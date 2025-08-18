@@ -407,7 +407,7 @@ async function fetchWeatherData() {
                 weatherData.forecast = forecastData;
             }
             
-            updateWeatherWidget();
+            updateWeatherText();
             if (isWeatherAppOpen) populateWeatherApp();
         } else { 
             console.error('Weather API error'); 
@@ -417,7 +417,7 @@ async function fetchWeatherData() {
     }
 }
 
-function updateWeatherWidget() {
+function updateWeatherText() {
     if (!weatherData) return;
     
     const weatherText = document.getElementById('weatherText');
