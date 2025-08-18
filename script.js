@@ -58,6 +58,461 @@ function setupEventListeners() {
         toggleStartMenu();
     });
 
+    // Setup start menu and context menu listeners
+    setupStartMenuListeners();
+    setupContextMenuListeners();
+    
+    // Modal Close Buttons
+    document.getElementById('closeSolitaire').addEventListener('click', closeSolitaireApp);
+    document.getElementById('closeWeather').addEventListener('click', closeWeatherApp);
+    document.getElementById('closeAdmin').addEventListener('click', closeAdminModal);
+    document.getElementById('closeIconModal').addEventListener('click', closeModal);
+    
+    // Admin Modal Buttons
+    document.getElementById('adminOk').addEventListener('click', checkAdminPassword);
+    document.getElementById('adminCancel').addEventListener('click', closeAdminModal);
+    document.getElementById('adminPassword').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') checkAdminPassword();
+    });
+
+    // Icon Edit Modal Buttons
+    document.getElementById('iconOk').addEventListener('click', saveIcon);
+    document.getElementById('iconCancel').addEventListener('click', closeModal);
+}
+
+// ===== CORE APP & UI FUNCTIONS =====
+function updateTime() {
+    try {
+        const now = new Date();
+        const timeString = now.toLocaleTimeString('en-US', { hour12: true, hour: 'numeric', minute: '2-digit' });
+        document.getElementById('timeDisplay').textContent = timeString;
+    } catch (error) { 
+        console.error('Time update error:', error); 
+    }
+}
+
+function addAppToTaskbar(appId, appName, iconUrl, focusHandler) {
+    if (runningApps.find(app => app.id === appId)) { 
+        if (focusHandler) focusHandler(); 
+        return; 
+    }
+    runningApps.push({ id: appId, name: appName, icon: iconUrl, handler: focusHandler });
+    updateTaskbar();
+}
+
+function removeAppFromTaskbar(appId) {
+    runningApps = runningApps.filter(app => app.id !== appId);
+    updateTaskbar();
+}
+
+function updateTaskbar() {
+    const container = document.getElementById('runningApps');
+    container.innerHTML = '';
+    runningApps.forEach(app => {
+        const button = document.createElement('button');
+        button.className = 'app-button';
+        if (app.handler) button.onclick = app.handler;
+        button.innerHTML = `<img src="${app.icon}" width="16" height="16" alt=""><span>${app.name}</span>`;
+        container.appendChild(button);
+    });
+}
+
+function setupModalDragging(modalId) {
+    const modal = document.getElementById(modalId);
+    if (!modal) return;
+    const header = modal.querySelector('.modal-header');
+    if (!header) return;
+    let isDragging = false, offset = { x: 0, y: 0 };
+    header.onmousedown = (e) => {
+        if (e.target.classList.contains('modal-close')) return;
+        isDragging = true;
+        offset = { x: e.clientX - modal.offsetLeft, y: e.clientY - modal.offsetTop };
+        header.style.cursor = 'grabbing';
+    };
+    document.onmousemove = (e) => {
+        if (!isDragging) return;
+        let newX = e.clientX - offset.x;
+        let newY = e.clientY - offset.y;
+        modal.style.left = `${Math.max(0, newX)}px`;
+        modal.style.top = `${Math.max(0, newY)}px`;
+    };
+    document.onmouseup = () => {
+        isDragging = false;
+        header.style.cursor = 'move';
+    };
+}
+
+function setupWeatherTextDragging() {
+    const weatherText = document.getElementById('weatherText');
+    if (!weatherText) return;
+    let isDragging = false, offset = { x: 0, y: 0 };
+    
+    weatherText.onmousedown = (e) => {
+        isDragging = true;
+        const rect = weatherText.getBoundingClientRect();
+        offset = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+        weatherText.style.cursor = 'grabbing';
+    };
+    
+    document.onmousemove = (e) => {
+        if (!isDragging) return;
+        let newX = e.clientX - offset.x;
+        let newY = e.clientY - offset.y;
+        
+        // Keep it positioned from the right side
+        const viewportWidth = window.innerWidth;
+        const elementWidth = weatherText.offsetWidth;
+        const rightPosition = viewportWidth - newX - elementWidth;
+        
+        weatherText.style.right = Math.max(0, rightPosition) + 'px';
+        weatherText.style.top = Math.max(0, newY) + 'px';
+        weatherText.style.left = 'auto'; // Remove left positioning
+    };
+    
+    document.onmouseup = () => {
+        isDragging = false;
+        weatherText.style.cursor = 'move';
+    };
+}
+
+// ===== WEATHER APP LOGIC =====
+async function fetchWeatherData() {
+    try {
+        // First show static version to ensure something displays
+        const weatherText = document.getElementById('weatherText');
+        if (weatherText) {
+            weatherText.innerHTML = 'Anderson, SC<br>Temp: 72°/45°<br>partly cloudy<br><br>3 Day Forecast<br>Tue: Sunny 75°/50°<br>Wed: Rain 68°/42°<br>Thu: Clear 78°/52°';
+        }
+        
+        const response = await fetch('https://api.openweathermap.org/data/2.5/weather?q=Anderson,SC,US&appid=8b093586dd2c02084b20747b888d3cfa&units=imperial');
+        if (response.ok) {
+            weatherData = await response.json();
+            updateWeatherText();
+            if (isWeatherAppOpen) populateWeatherApp();
+        } else { 
+            console.error('Weather API error'); 
+        }
+    } catch (error) { 
+        console.error('Weather fetch error:', error); 
+    }
+}
+
+function updateWeatherText() {
+    if (!weatherData) return;
+    
+    const weatherText = document.getElementById('weatherText');
+    const current = weatherData;
+    
+    const currentTemp = Math.round(current.main.temp);
+    const highTemp = Math.round(current.main.temp_max);
+    const lowTemp = Math.round(current.main.temp_min);
+    const condition = current.weather[0].description;
+    
+    weatherText.innerHTML = 'Anderson, SC<br>Temp: ' + highTemp + '°/' + lowTemp + '°<br>' + condition + '<br><br>3 Day Forecast<br>Tue: Sunny 75°/50°<br>Wed: Rain 68°/42°<br>Thu: Clear 78°/52°';
+}
+
+function openWeatherApp() {
+    hideAllMenus();
+    const modal = document.getElementById('weatherModal');
+    modal.style.display = 'flex';
+    isWeatherAppOpen = true;
+    addAppToTaskbar('weather', 'Weather', 'https://win98icons.alexmeub.com/icons/png/weather-2.png', () => modal.style.display = 'flex');
+    const loadingEl = document.getElementById('weatherLoading');
+    const contentEl = document.getElementById('weatherContent');
+    if (weatherData) { 
+        populateWeatherApp(); 
+        loadingEl.style.display = 'none'; 
+        contentEl.style.display = 'block'; 
+    } else { 
+        loadingEl.style.display = 'block'; 
+        contentEl.style.display = 'none'; 
+    }
+}
+
+function closeWeatherApp() {
+    isWeatherAppOpen = false;
+    document.getElementById('weatherModal').style.display = 'none';
+    removeAppFromTaskbar('weather');
+}
+
+function populateWeatherApp() {
+    if (!weatherData) return;
+    document.getElementById('currentLocation').textContent = `${weatherData.name}, ${weatherData.sys.country}`;
+    document.getElementById('currentWeatherIcon').textContent = getWeatherEmoji(weatherData.weather[0].main);
+    document.getElementById('currentTemp').textContent = `${Math.round(weatherData.main.temp)}°F`;
+    document.getElementById('currentCondition').textContent = weatherData.weather[0].description;
+}
+
+function getWeatherEmoji(condition) {
+    const map = {'Clear':'☀️','Clouds':'☁️','Rain':'🌧️','Drizzle':'🌦️','Thunderstorm':'⛈️','Snow':'❄️','Mist':'🌫️','Fog':'🌫️','Haze':'🌫️'};
+    return map[condition] || '🌤️';
+}
+
+// ===== SOLITAIRE GAME LOGIC =====
+const SOLITAIRE_SUITS = { H: "red", D: "red", C: "black", S: "black" };
+const SOLITAIRE_VALUES = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "T", "J", "Q", "K"];
+let sol_stock = [], sol_waste = [], sol_foundations = [[], [], [], []], sol_tableau = [[], [], [], [], [], [], []];
+let sol_draggedInfo = null;
+
+function openSolitaireApp() {
+    hideAllMenus();
+    const modal = document.getElementById('solitaireModal');
+    modal.style.display = 'flex';
+    addAppToTaskbar('solitaire', 'Solitaire', 'https://win98icons.alexmeub.com/icons/png/card_deck.png', () => modal.style.display = 'flex');
+    initSolitaire();
+}
+
+function closeSolitaireApp() {
+    document.getElementById('solitaireModal').style.display = 'none';
+    removeAppFromTaskbar('solitaire');
+}
+
+function initSolitaire() {
+    sol_stock = []; sol_waste = [];
+    sol_foundations = [[], [], [], []];
+    sol_tableau = [[], [], [], [], [], [], []];
+    const deck = Object.keys(SOLITAIRE_SUITS).flatMap(s => SOLITAIRE_VALUES.map(v => ({ suit: s, value: v, faceUp: false }))).sort(() => Math.random() - 0.5);
+    for (let i = 0; i < 7; i++) {
+        for (let j = i; j < 7; j++) {
+            sol_tableau[j].push(deck.pop());
+        }
+    }
+    sol_tableau.forEach(p => { if (p.length) p[p.length - 1].faceUp = true; });
+    sol_stock = deck;
+    renderSolitaireBoard();
+}
+
+function renderSolitaireBoard() {
+    sol_tableau.forEach((pile, i) => {
+        const pileEl = document.querySelector(`.tableau[data-tableau-index="${i}"]`);
+        pileEl.innerHTML = '';
+        pile.forEach((card, j) => {
+            const cardEl = createSolitaireCard(card, 'tableau', i, j);
+            cardEl.style.top = `${j * 25}px`;
+            pileEl.appendChild(cardEl);
+        });
+    });
+    sol_foundations.forEach((pile, i) => {
+        const pileEl = document.querySelector(`.foundation[data-foundation-index="${i}"]`);
+        pileEl.innerHTML = '';
+        if (pile.length) pileEl.appendChild(createSolitaireCard(pile[pile.length - 1], 'foundation', i));
+    });
+    document.getElementById('stock-pile').innerHTML = sol_stock.length ? createSolitaireCard({ faceUp: false }, 'stock').outerHTML : '';
+    document.getElementById('waste-pile').innerHTML = sol_waste.length ? createSolitaireCard(sol_waste[sol_waste.length - 1], 'waste').outerHTML : '';
+}
+
+function createSolitaireCard(card, source, pIndex, cIndex) {
+    const cardEl = document.createElement('div');
+    cardEl.className = 'card';
+    if (card.faceUp) {
+        let val = card.value === 'T' ? '10' : card.value;
+        cardEl.style.backgroundImage = `url('https://deckofcardsapi.com/static/img/${val}${card.suit}.png')`;
+        cardEl.draggable = true;
+        cardEl.addEventListener('dragstart', (e) => { sol_draggedInfo = { card, source, pIndex, cIndex }; e.dataTransfer.setData('text/plain', ''); });
+    } else { cardEl.classList.add('back'); }
+    return cardEl;
+}
+
+function getCardColor(card) { return SOLITAIRE_SUITS[card.suit]; }
+function getCardRank(card) { return SOLITAIRE_VALUES.indexOf(card.value); }
+
+function handleSolitaireDrop(targetInfo) {
+    if (!sol_draggedInfo) return;
+    const { card: draggedCard, source: fromSource, pIndex: fromPIndex, cIndex: fromCIndex } = sol_draggedInfo;
+    const { source: toSource, pIndex: toPIndex } = targetInfo;
+    let moved = false;
+    if (toSource === 'foundation') {
+        const targetPile = sol_foundations[toPIndex];
+        const topCard = targetPile.length > 0 ? targetPile[targetPile.length - 1] : null;
+        if (!topCard && getCardRank(draggedCard) === 0) { moved = true; }
+        if (topCard && topCard.suit === draggedCard.suit && getCardRank(draggedCard) === getCardRank(topCard) + 1) { moved = true; }
+        if (moved) {
+            const cardToMove = (fromSource === 'tableau' ? sol_tableau[fromPIndex] : sol_waste).pop();
+            targetPile.push(cardToMove);
+        }
+    }
+    if (toSource === 'tableau') {
+        const targetPile = sol_tableau[toPIndex];
+        const topCard = targetPile.length > 0 ? targetPile[targetPile.length - 1] : null;
+        if (!topCard && getCardRank(draggedCard) === 12) { moved = true; }
+        if (topCard && getCardColor(topCard) !== getCardColor(draggedCard) && getCardRank(draggedCard) === getCardRank(topCard) - 1) { moved = true; }
+        if (moved) {
+            let cardsToMove = [];
+            if (fromSource === 'tableau') { cardsToMove = sol_tableau[fromPIndex].splice(fromCIndex); }
+            else { cardsToMove = [sol_waste.pop()]; }
+            targetPile.push(...cardsToMove);
+        }
+    }
+    if (moved && fromSource === 'tableau') {
+        const sourcePile = sol_tableau[fromPIndex];
+        if (sourcePile.length > 0) { sourcePile[sourcePile.length - 1].faceUp = true; }
+    }
+    renderSolitaireBoard();
+    sol_draggedInfo = null;
+    if (sol_foundations.every(p => p.length === 13)) { setTimeout(() => alert("Congratulations, You've Won!"), 100); }
+}
+
+// Event listeners for solitaire drag and drop
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.pile').forEach(p => {
+        p.addEventListener('dragover', e => e.preventDefault());
+        p.addEventListener('drop', e => {
+            e.preventDefault();
+            const tClass = e.currentTarget.classList;
+            let tInfo = {};
+            if (tClass.contains('tableau')) tInfo = { source: 'tableau', pIndex: parseInt(e.currentTarget.dataset.tableauIndex) };
+            if (tClass.contains('foundation')) tInfo = { source: 'foundation', pIndex: parseInt(e.currentTarget.dataset.foundationIndex) };
+            if (tInfo.source) handleSolitaireDrop(tInfo);
+        });
+    });
+    
+    document.getElementById('stock-pile').addEventListener('click', () => {
+        if (sol_stock.length > 0) { 
+            const card = sol_stock.pop(); 
+            card.faceUp = true; 
+            sol_waste.push(card); 
+        } else if (sol_waste.length > 0) { 
+            sol_stock = sol_waste.reverse().map(c => ({...c, faceUp: false})); 
+            sol_waste = []; 
+        }
+        renderSolitaireBoard();
+    });
+});
+
+// ===== ADMIN & ICON MANAGEMENT =====
+function requireAdminAuth(action) {
+    if (isAdminAuthenticated) { action(); return; }
+    pendingAdminAction = action;
+    const modal = document.getElementById('adminModal');
+    if (modal) { modal.style.display = 'flex'; document.getElementById('adminPassword').focus(); }
+}
+
+function checkAdminPassword() {
+    const passField = document.getElementById('adminPassword');
+    if (!passField) return;
+    if (passField.value === ADMIN_PASSWORD) {
+        isAdminAuthenticated = true;
+        closeAdminModal();
+        if (pendingAdminAction) { pendingAdminAction(); pendingAdminAction = null; }
+    } else {
+        alert('Incorrect password. Access denied.');
+        passField.value = '';
+    }
+}
+
+function closeAdminModal() {
+    const modal = document.getElementById('adminModal');
+    if (modal) modal.style.display = 'none';
+    document.getElementById('adminPassword').value = '';
+}
+
+function addNewIcon() {
+    currentIcon = null;
+    document.getElementById('modalTitle').textContent = 'Add New Icon';
+    document.getElementById('iconName').value = '';
+    document.getElementById('iconUrl').value = '';
+    document.getElementById('iconModal').style.display = 'flex';
+    hideAllMenus();
+}
+
+function editIcon(icon) {
+    if (!icon) return;
+    currentIcon = icon;
+    document.getElementById('modalTitle').textContent = 'Edit Icon';
+    document.getElementById('iconName').value = icon.querySelector('span').textContent;
+    document.getElementById('iconUrl').value = icon.dataset.url;
+    document.getElementById('iconModal').style.display = 'flex';
+    hideAllMenus();
+}
+
+function deleteIcon(icon) {
+    if (!icon) return;
+    if (confirm('Are you sure you want to delete this icon?')) {
+        icon.remove();
+        autoArrangeIcons();
+    }
+    hideAllMenus();
+}
+
+function closeModal() {
+    document.getElementById('iconModal').style.display = 'none';
+}
+
+function saveIcon() {
+    const name = document.getElementById('iconName').value.trim();
+    let url = document.getElementById('iconUrl').value.trim();
+    if (!name || !url) { alert('Please fill in all fields.'); return; }
+    if (!url.startsWith('http')) { url = 'https://' + url; }
+    if (currentIcon) {
+        currentIcon.querySelector('span').textContent = name;
+        currentIcon.dataset.url = url;
+        currentIcon.querySelector('img').src = `https://icons.duckduckgo.com/ip3/${new URL(url).hostname}.ico`;
+    } else {
+        const newIconData = { name, url, id: `custom-${Date.now()}`, iconUrl: `https://icons.duckduckgo.com/ip3/${new URL(url).hostname}.ico` };
+        createIconElement(newIconData);
+        autoArrangeIcons();
+    }
+    closeModal();
+}// ===== GLOBAL VARIABLES =====
+let currentIcon = null;
+let isAdminAuthenticated = false;
+const ADMIN_PASSWORD = "admin123";
+let pendingAdminAction = null;
+let weatherData = null;
+let isWeatherAppOpen = false;
+let runningApps = [];
+
+const WEATHER_API_KEY = "8b093586dd2c02084b20747b888d3cfa";
+const WEATHER_LOCATION = "Anderson,SC,US";
+
+// ===== INITIALIZATION =====
+document.addEventListener('DOMContentLoaded', function() {
+    try {
+        updateTime();
+        setInterval(updateTime, 1000);
+        setupEventListeners();
+        setupModalDragging('weatherModal');
+        setupModalDragging('solitaireModal');
+        setupModalDragging('adminModal');
+        setupModalDragging('iconModal');
+        setupWeatherTextDragging();
+        
+        // Show basic weather text first
+        const weatherText = document.getElementById('weatherText');
+        if (weatherText) {
+            weatherText.innerHTML = 'Anderson, SC<br>Temp: 72°/45°<br>partly cloudy<br><br>3 Day Forecast<br>Tue: Sunny 75°/50°<br>Wed: Rain 68°/42°<br>Thu: Clear 78°/52°';
+        }
+        
+        fetchWeatherData();
+        setInterval(fetchWeatherData, 600000);
+        loadInitialIcons();
+        autoArrangeIcons();
+        window.addEventListener('resize', autoArrangeIcons);
+    } catch (error) {
+        console.error('Initialization error:', error);
+    }
+});
+
+// ===== EVENT LISTENERS SETUP =====
+function setupEventListeners() {
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.start-button') && !e.target.closest('.start-menu')) {
+            hideAllMenus();
+        }
+    });
+
+    document.getElementById('desktop').addEventListener('contextmenu', (e) => {
+        if (e.target === document.getElementById('desktop')) {
+            currentIcon = null;
+            showContextMenu(e);
+        }
+    });
+
+    document.getElementById('startButton').addEventListener('click', (e) => {
+        e.stopPropagation();
+        toggleStartMenu();
+    });
+
     document.getElementById('startMenuSolitaire').addEventListener('click', openSolitaireApp);
     document.getElementById('startMenuWeather').addEventListener('click', openWeatherApp);
     document.getElementById('startMenuAddIcon').addEventListener('click', () => requireAdminAuth(addNewIcon));
