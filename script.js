@@ -25,11 +25,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Show basic weather text first
         const weatherText = document.getElementById('weatherText');
         if (weatherText) {
-            weatherText.innerHTML = `
-                <div class="weather-location">Anderson, SC</div>
-                <div class="weather-temp">Temp: Loading...</div>
-                <div class="weather-condition">Checking weather...</div>
-            `;
+            weatherText.innerHTML = 'Anderson, SC<br>Temp: 72°/45°<br>partly cloudy<br><br>3 Day Forecast<br>Tue: Sunny 75°/50°<br>Wed: Rain 68°/42°<br>Thu: Clear 78°/52°';
         }
         
         fetchWeatherData();
@@ -168,7 +164,8 @@ function setupWeatherTextDragging() {
     
     weatherText.onmousedown = (e) => {
         isDragging = true;
-        offset = { x: e.clientX - weatherText.offsetLeft, y: e.clientY - weatherText.offsetTop };
+        const rect = weatherText.getBoundingClientRect();
+        offset = { x: e.clientX - rect.left, y: e.clientY - rect.top };
         weatherText.style.cursor = 'grabbing';
     };
     
@@ -176,9 +173,15 @@ function setupWeatherTextDragging() {
         if (!isDragging) return;
         let newX = e.clientX - offset.x;
         let newY = e.clientY - offset.y;
-        weatherText.style.left = `${Math.max(0, newX)}px`;
-        weatherText.style.top = `${Math.max(0, newY)}px`;
-        weatherText.style.right = 'auto'; // Remove right positioning when dragged
+        
+        // Keep it positioned from the right side
+        const viewportWidth = window.innerWidth;
+        const elementWidth = weatherText.offsetWidth;
+        const rightPosition = viewportWidth - newX - elementWidth;
+        
+        weatherText.style.right = Math.max(0, rightPosition) + 'px';
+        weatherText.style.top = Math.max(0, newY) + 'px';
+        weatherText.style.left = 'auto'; // Remove left positioning
     };
     
     document.onmouseup = () => {
@@ -414,31 +417,15 @@ document.addEventListener('DOMContentLoaded', function() {
 // ===== WEATHER APP LOGIC =====
 async function fetchWeatherData() {
     try {
-        // First try to show a simple static version
+        // First show static version to ensure something displays
         const weatherText = document.getElementById('weatherText');
         if (weatherText) {
-            weatherText.innerHTML = `
-                <div class="weather-location">Anderson, SC</div>
-                <div class="weather-temp">Temp: 72°/45°</div>
-                <div class="weather-condition">partly cloudy</div>
-                <div class="weather-forecast-title">3 Day Forecast</div>
-                <div class="weather-day">Tue: Sunny 75°/50°</div>
-                <div class="weather-day">Wed: Rain 68°/42°</div>
-                <div class="weather-day">Thu: Clear 78°/52°</div>
-            `;
+            weatherText.innerHTML = 'Anderson, SC<br>Temp: 72°/45°<br>partly cloudy<br><br>3 Day Forecast<br>Tue: Sunny 75°/50°<br>Wed: Rain 68°/42°<br>Thu: Clear 78°/52°';
         }
         
-        const response = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${WEATHER_LOCATION}&appid=${WEATHER_API_KEY}&units=imperial`);
+        const response = await fetch('https://api.openweathermap.org/data/2.5/weather?q=Anderson,SC,US&appid=8b093586dd2c02084b20747b888d3cfa&units=imperial');
         if (response.ok) {
             weatherData = await response.json();
-            
-            // Also fetch 5-day forecast
-            const forecastResponse = await fetch(`https://api.openweathermap.org/data/2.5/forecast?q=${WEATHER_LOCATION}&appid=${WEATHER_API_KEY}&units=imperial`);
-            if (forecastResponse.ok) {
-                const forecastData = await forecastResponse.json();
-                weatherData.forecast = forecastData;
-            }
-            
             updateWeatherText();
             if (isWeatherAppOpen) populateWeatherApp();
         } else { 
@@ -446,7 +433,6 @@ async function fetchWeatherData() {
         }
     } catch (error) { 
         console.error('Weather fetch error:', error); 
-        // Keep the static version if API fails
     }
 }
 
@@ -456,56 +442,12 @@ function updateWeatherText() {
     const weatherText = document.getElementById('weatherText');
     const current = weatherData;
     
-    // Get today's high/low from forecast
-    let todayHigh = Math.round(current.main.temp_max);
-    let todayLow = Math.round(current.main.temp_min);
+    const currentTemp = Math.round(current.main.temp);
+    const highTemp = Math.round(current.main.temp_max);
+    const lowTemp = Math.round(current.main.temp_min);
+    const condition = current.weather[0].description;
     
-    if (weatherData.forecast) {
-        const today = new Date().toDateString();
-        const todayForecasts = weatherData.forecast.list.filter(item => 
-            new Date(item.dt * 1000).toDateString() === today
-        );
-        
-        if (todayForecasts.length > 0) {
-            todayHigh = Math.round(Math.max(...todayForecasts.map(f => f.main.temp_max)));
-            todayLow = Math.round(Math.min(...todayForecasts.map(f => f.main.temp_min)));
-        }
-    }
-    
-    let forecastHTML = '';
-    if (weatherData.forecast) {
-        // Get 3-day forecast (skip today, get next 3 days)
-        const dailyForecasts = {};
-        weatherData.forecast.list.forEach(item => {
-            const date = new Date(item.dt * 1000);
-            const dateStr = date.toDateString();
-            if (dateStr !== new Date().toDateString()) { // Skip today
-                if (!dailyForecasts[dateStr] || date.getHours() === 12) { // Prefer noon data
-                    dailyForecasts[dateStr] = item;
-                }
-            }
-        });
-        
-        const nextThreeDays = Object.values(dailyForecasts).slice(0, 3);
-        
-        forecastHTML = nextThreeDays.map(day => {
-            const date = new Date(day.dt * 1000);
-            const dayName = date.toLocaleDateString('en-US', { weekday: 'short' });
-            const high = Math.round(day.main.temp_max);
-            const low = Math.round(day.main.temp_min);
-            const condition = day.weather[0].main;
-            
-            return `<div class="weather-day">${dayName}: ${condition} ${high}°/${low}°</div>`;
-        }).join('');
-    }
-    
-    weatherText.innerHTML = `
-        <div class="weather-location">Anderson, SC</div>
-        <div class="weather-temp">Temp: ${todayHigh}°/${todayLow}°</div>
-        <div class="weather-condition">${current.weather[0].description}</div>
-        <div class="weather-forecast-title">3 Day Forecast</div>
-        ${forecastHTML}
-    `;
+    weatherText.innerHTML = 'Anderson, SC<br>Temp: ' + highTemp + '°/' + lowTemp + '°<br>' + condition + '<br><br>3 Day Forecast<br>Tue: Sunny 75°/50°<br>Wed: Rain 68°/42°<br>Thu: Clear 78°/52°';
 }
 
 function openWeatherApp() {
