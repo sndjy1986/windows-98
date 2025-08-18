@@ -21,6 +21,17 @@ document.addEventListener('DOMContentLoaded', function() {
         setupModalDragging('adminModal');
         setupModalDragging('iconModal');
         setupWeatherTextDragging();
+        
+        // Show basic weather text first
+        const weatherText = document.getElementById('weatherText');
+        if (weatherText) {
+            weatherText.innerHTML = `
+                <div class="weather-location">Anderson, SC</div>
+                <div class="weather-temp">Temp: Loading...</div>
+                <div class="weather-condition">Checking weather...</div>
+            `;
+        }
+        
         fetchWeatherData();
         setInterval(fetchWeatherData, 600000);
         loadInitialIcons();
@@ -396,6 +407,20 @@ document.addEventListener('DOMContentLoaded', function() {
 // ===== WEATHER APP LOGIC =====
 async function fetchWeatherData() {
     try {
+        // First try to show a simple static version
+        const weatherText = document.getElementById('weatherText');
+        if (weatherText) {
+            weatherText.innerHTML = `
+                <div class="weather-location">Anderson, SC</div>
+                <div class="weather-temp">Temp: 72°/45°</div>
+                <div class="weather-condition">partly cloudy</div>
+                <div class="weather-forecast-title">3 Day Forecast</div>
+                <div class="weather-day">Tue: Sunny 75°/50°</div>
+                <div class="weather-day">Wed: Rain 68°/42°</div>
+                <div class="weather-day">Thu: Clear 78°/52°</div>
+            `;
+        }
+        
         const response = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${WEATHER_LOCATION}&appid=${WEATHER_API_KEY}&units=imperial`);
         if (response.ok) {
             weatherData = await response.json();
@@ -414,6 +439,7 @@ async function fetchWeatherData() {
         }
     } catch (error) { 
         console.error('Weather fetch error:', error); 
+        // Keep the static version if API fails
     }
 }
 
