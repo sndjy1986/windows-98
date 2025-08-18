@@ -123,8 +123,8 @@ body {
     margin-right: 2px;
 }
 
-/* ===== MENUS ===== */
-.start-menu, .context-menu {
+/* ===== ENHANCED START MENU ===== */
+.start-menu {
     position: fixed;
     background: #c0c0c0;
     border: 1px outset #fff;
@@ -132,19 +132,68 @@ body {
     display: none;
     z-index: 2001;
     padding: 2px;
-}
-
-.start-menu {
     bottom: 32px;
     left: 2px;
-    width: 180px;
+    width: 250px;
+    max-height: calc(100vh - 60px);
+    overflow-y: auto;
+}
+
+.start-menu-header {
+    background: linear-gradient(90deg, #000080 0%, #0000ff 100%);
+    color: white;
+    padding: 8px 12px;
+    font-weight: bold;
+    font-size: 12px;
+    margin: -2px -2px 2px -2px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.start-menu-section {
+    border-bottom: 1px solid #808080;
+    margin-bottom: 2px;
+    padding-bottom: 2px;
+}
+
+.start-menu-section:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.start-menu-item {
+    padding: 4px 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+}
+
+.start-menu-item:hover {
+    background: #000080;
+    color: white;
+}
+
+.start-menu-item img {
+    width: 16px;
+    height: 16px;
 }
 
 .context-menu {
+    position: fixed;
+    background: #c0c0c0;
+    border: 1px outset #fff;
+    box-shadow: 2px 2px 5px rgba(0,0,0,0.5);
+    display: none;
+    z-index: 2001;
+    padding: 2px;
     min-width: 140px;
 }
 
-.start-menu-item, .context-menu-item {
+.context-menu-item {
     padding: 6px 12px;
     cursor: pointer;
     display: flex;
@@ -152,16 +201,9 @@ body {
     gap: 8px;
 }
 
-.start-menu-item:hover, .context-menu-item:hover {
+.context-menu-item:hover {
     background: #000080;
     color: white;
-}
-
-.start-menu-separator {
-    height: 1px;
-    background: #808080;
-    border-bottom: 1px solid #fff;
-    margin: 2px 0;
 }
 
 /* ===== MODALS (WINDOWS) ===== */
@@ -260,22 +302,6 @@ body {
     flex-direction: column;
 }
 
-.solitaire-top-bar {
-    padding: 5px;
-    margin-bottom: 10px;
-}
-
-.solitaire-top-bar button {
-    padding: 2px 8px;
-    background: #c0c0c0;
-    border: 1px outset #fff;
-    cursor: pointer;
-}
-
-.solitaire-top-bar button:active {
-    border-style: inset;
-}
-
 #solitaire-game-board {
     flex: 1;
     display: flex;
@@ -365,60 +391,6 @@ body {
 
 .weather-app .weather-icon {
     font-size: 24px;
-}
-
-.weather-app .weather-details {
-    padding: 5px 10px;
-    margin-bottom: 5px;
-    border-bottom: 1px solid #808080;
-}
-
-.weather-app .detail-item {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 2px;
-}
-
-.weather-app .forecast-section h3 {
-    padding: 0 10px 5px 10px;
-    font-size: 11px;
-}
-
-.weather-app .forecast-container {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-    padding: 0 10px;
-}
-
-.weather-app .forecast-day {
-    display: grid;
-    grid-template-columns: 100px 1fr 60px;
-    align-items: center;
-    font-size: 11px;
-}
-
-.weather-app .forecast-day .day-name {
-    font-weight: bold;
-}
-
-.weather-app .forecast-day .month-day {
-    font-weight: normal;
-    font-size: 10px;
-}
-
-.weather-app .forecast-day .forecast-icon {
-    font-size: 20px;
-    text-align: center;
-}
-
-.weather-app .forecast-day .forecast-temps {
-    text-align: right;
-}
-
-.weather-app .forecast-temps .low {
-    color: #666;
-    margin-left: 5px;
 }
 
 /* Mobile Responsive */
