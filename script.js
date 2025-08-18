@@ -20,6 +20,7 @@ document.addEventListener('DOMContentLoaded', function() {
         setupModalDragging('solitaireModal');
         setupModalDragging('adminModal');
         setupModalDragging('iconModal');
+        setupWidgetDragging('weatherWidget');
         fetchWeatherData();
         setInterval(fetchWeatherData, 600000);
         loadInitialIcons();
@@ -142,6 +143,31 @@ function setupModalDragging(modalId) {
         let newY = e.clientY - offset.y;
         modal.style.left = `${Math.max(0, newX)}px`;
         modal.style.top = `${Math.max(0, newY)}px`;
+    };
+    document.onmouseup = () => {
+        isDragging = false;
+        header.style.cursor = 'move';
+    };
+}
+
+function setupWidgetDragging(widgetId) {
+    const widget = document.getElementById(widgetId);
+    if (!widget) return;
+    const header = widget.querySelector('.weather-widget-header');
+    if (!header) return;
+    let isDragging = false, offset = { x: 0, y: 0 };
+    header.style.cursor = 'move';
+    header.onmousedown = (e) => {
+        isDragging = true;
+        offset = { x: e.clientX - widget.offsetLeft, y: e.clientY - widget.offsetTop };
+        header.style.cursor = 'grabbing';
+    };
+    document.onmousemove = (e) => {
+        if (!isDragging) return;
+        let newX = e.clientX - offset.x;
+        let newY = e.clientY - offset.y;
+        widget.style.left = `${Math.max(0, newX)}px`;
+        widget.style.top = `${Math.max(0, newY)}px`;
     };
     document.onmouseup = () => {
         isDragging = false;
@@ -372,9 +398,90 @@ async function fetchWeatherData() {
         const response = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${WEATHER_LOCATION}&appid=${WEATHER_API_KEY}&units=imperial`);
         if (response.ok) {
             weatherData = await response.json();
+            
+            // Also fetch 5-day forecast
+            const forecastResponse = await fetch(`https://api.openweathermap.org/data/2.5/forecast?q=${WEATHER_LOCATION}&appid=${WEATHER_API_KEY}&units=imperial`);
+            if (forecastResponse.ok) {
+                const forecastData = await forecastResponse.json();
+                weatherData.forecast = forecastData;
+            }
+            
+            updateWeatherWidget();
             if (isWeatherAppOpen) populateWeatherApp();
-        } else { console.error('Weather API error'); }
-    } catch (error) { console.error('Weather fetch error:', error); }
+        } else { 
+            console.error('Weather API error'); 
+        }
+    } catch (error) { 
+        console.error('Weather fetch error:', error); 
+    }
+}
+
+function updateWeatherWidget() {
+    if (!weatherData) return;
+    
+    const widgetContent = document.getElementById('weatherWidgetContent');
+    const current = weatherData;
+    
+    // Get today's high/low from forecast
+    let todayHigh = Math.round(current.main.temp_max);
+    let todayLow = Math.round(current.main.temp_min);
+    
+    if (weatherData.forecast) {
+        const today = new Date().toDateString();
+        const todayForecasts = weatherData.forecast.list.filter(item => 
+            new Date(item.dt * 1000).toDateString() === today
+        );
+        
+        if (todayForecasts.length > 0) {
+            todayHigh = Math.round(Math.max(...todayForecasts.map(f => f.main.temp_max)));
+            todayLow = Math.round(Math.min(...todayForecasts.map(f => f.main.temp_min)));
+        }
+    }
+    
+    let forecastHTML = '';
+    if (weatherData.forecast) {
+        // Get 3-day forecast (skip today, get next 3 days)
+        const dailyForecasts = {};
+        weatherData.forecast.list.forEach(item => {
+            const date = new Date(item.dt * 1000);
+            const dateStr = date.toDateString();
+            if (dateStr !== new Date().toDateString()) { // Skip today
+                if (!dailyForecasts[dateStr] || date.getHours() === 12) { // Prefer noon data
+                    dailyForecasts[dateStr] = item;
+                }
+            }
+        });
+        
+        const nextThreeDays = Object.values(dailyForecasts).slice(0, 3);
+        
+        forecastHTML = nextThreeDays.map(day => {
+            const date = new Date(day.dt * 1000);
+            const dayName = date.toLocaleDateString('en-US', { weekday: 'short' });
+            const high = Math.round(day.main.temp_max);
+            const low = Math.round(day.main.temp_min);
+            const condition = day.weather[0].main;
+            
+            return `
+                <div class="weather-day">
+                    <div class="weather-day-name">${dayName}</div>
+                    <div class="weather-day-condition">${condition}</div>
+                    <div class="weather-day-temps">${high}°/${low}°</div>
+                </div>
+            `;
+        }).join('');
+    }
+    
+    widgetContent.innerHTML = `
+        <div class="weather-current">
+            <div class="weather-location">Anderson, SC</div>
+            <div class="weather-temp">Temp: ${todayHigh}°/${todayLow}°</div>
+            <div class="weather-condition">${current.weather[0].description}</div>
+        </div>
+        <div class="weather-forecast">
+            <div class="weather-forecast-title">3 Day Forecast</div>
+            ${forecastHTML}
+        </div>
+    `;
 }
 
 function openWeatherApp() {
