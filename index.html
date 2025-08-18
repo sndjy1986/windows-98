@@ -1,197 +1,519 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Windows 98 Desktop</title>
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
-    <div class="desktop" id="desktop"></div>
+/* ===== RESET & BASE STYLES ===== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
 
-    <div class="taskbar">
-        <div class="taskbar-left">
-            <button class="start-button" id="startButton">
-                <img src="https://win98icons.alexmeub.com/icons/png/windows-0.png" alt="" width="20" height="20">
-                <span>Start</span>
-            </button>
-            <div id="runningApps" class="running-apps"></div>
-        </div>
-        <div style="flex-grow: 1;"></div> 
-        <div class="system-tray">
-            <span id="timeDisplay"></span>
-        </div>
-    </div>
+body {
+    font-family: 'MS Sans Serif', sans-serif;
+    font-size: 11px;
+    background: #008080;
+    height: 100vh;
+    overflow: hidden;
+    cursor: default;
+    user-select: none;
+}
 
-    <div class="start-menu" id="startMenu">
-        <div class="start-menu-header">
-            <img src="https://win98icons.alexmeub.com/icons/png/windows-0.png" alt="" width="24" height="24">
-            <span>Windows 98</span>
-        </div>
-        
-        <div class="start-menu-section">
-            <div class="start-menu-item" id="startMenuPrograms">
-                <img src="https://win98icons.alexmeub.com/icons/png/directory_closed-4.png" alt="Programs" width="16" height="16">
-                <span>Programs</span>
-            </div>
-            <div class="start-menu-item" id="startMenuDocuments">
-                <img src="https://win98icons.alexmeub.com/icons/png/notepad-3.png" alt="Documents" width="16" height="16">
-                <span>Documents</span>
-            </div>
-            <div class="start-menu-item" id="startMenuSettings">
-                <img src="https://win98icons.alexmeub.com/icons/png/settings_gear-0.png" alt="Settings" width="16" height="16">
-                <span>Settings</span>
-            </div>
-            <div class="start-menu-item" id="startMenuFind">
-                <img src="https://win98icons.alexmeub.com/icons/png/search_web-1.png" alt="Find" width="16" height="16">
-                <span>Find</span>
-            </div>
-            <div class="start-menu-item" id="startMenuHelp">
-                <img src="https://win98icons.alexmeub.com/icons/png/help_book_small-0.png" alt="Help" width="16" height="16">
-                <span>Help</span>
-            </div>
-            <div class="start-menu-item" id="startMenuRun">
-                <img src="https://win98icons.alexmeub.com/icons/png/application_hourglass-4.png" alt="Run" width="16" height="16">
-                <span>Run...</span>
-            </div>
-        </div>
+/* ===== DESKTOP & ICONS ===== */
+.desktop {
+    position: relative;
+    width: 100vw;
+    height: calc(100vh - 30px);
+    padding: 10px;
+}
 
-        <div class="start-menu-section">
-            <div class="start-menu-item" id="startMenuSolitaire">
-                <img src="https://win98icons.alexmeub.com/icons/png/card_deck.png" alt="Solitaire" width="16" height="16">
-                <span>Solitaire</span>
-            </div>
-            <div class="start-menu-item" id="startMenuWeather">
-                <img src="https://win98icons.alexmeub.com/icons/png/weather-2.png" alt="Weather" width="16" height="16">
-                <span>Weather</span>
-            </div>
-        </div>
+.desktop-icon {
+    position: absolute;
+    width: 75px;
+    height: 75px;
+    padding: 5px;
+    text-align: center;
+    color: white;
+    text-shadow: 1px 1px 1px black;
+    cursor: pointer;
+}
 
-        <div class="start-menu-section">
-            <div class="start-menu-item" id="startMenuAddIcon">
-                <img src="https://win98icons.alexmeub.com/icons/png/template_empty-1.png" alt="Add Icon" width="16" height="16">
-                <span>Add New Icon</span>
-            </div>
-            <div class="start-menu-item" id="startMenuExport">
-                <img src="https://win98icons.alexmeub.com/icons/png/save_all-0.png" alt="Export" width="16" height="16">
-                <span>Export Config</span>
-            </div>
-            <div class="start-menu-item" id="startMenuImport">
-                <img src="https://win98icons.alexmeub.com/icons/png/directory_open_file_mydocs-2.png" alt="Import" width="16" height="16">
-                <span>Import Config</span>
-            </div>
-        </div>
+.desktop-icon img {
+    width: 48px;
+    height: 48px;
+    display: block;
+    margin: 0 auto 5px;
+}
 
-        <div class="start-menu-section">
-            <div class="start-menu-item" id="startMenuShutdown">
-                <img src="https://win98icons.alexmeub.com/icons/png/shut_down_with_computer-4.png" alt="Shut Down" width="16" height="16">
-                <span>Shut Down...</span>
-            </div>
-        </div>
-    </div>
+.desktop-icon span {
+    display: block;
+    font-size: 11px;
+    word-wrap: break-word;
+}
 
-    <div class="context-menu" id="contextMenu">
-        <div class="context-menu-item" id="contextMenuAdd">Add New Icon</div>
-        <div class="context-menu-item" id="contextMenuEdit">Edit Icon</div>
-        <div class="context-menu-item" id="contextMenuDelete">Delete Icon</div>
-    </div>
+.desktop-icon:hover {
+    background: rgba(0,0,128,0.3);
+    border: 1px dotted #fff;
+}
 
-    <input type="file" id="importFile" accept=".json" style="display: none;">
+/* ===== DESKTOP WEATHER WIDGET ===== */
+.weather-widget {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 200px;
+    background: #c0c0c0;
+    border: 2px outset #fff;
+    padding: 8px;
+    font-family: 'MS Sans Serif', sans-serif;
+    font-size: 11px;
+    color: #000;
+    box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
+}
 
-    <div class="modal" id="solitaireModal">
-        <div class="modal-content solitaire-modal-content">
-            <div class="modal-header">
-                <span>Solitaire</span>
-                <button class="modal-close" id="closeSolitaire">×</button>
-            </div>
-            <div class="modal-body solitaire-body">
-                 <div id="solitaire-game-board">
-                    <div class="solitaire-top-piles">
-                        <div class="solitaire-stock-waste">
-                            <div class="pile stock" id="stock-pile"></div>
-                            <div class="pile waste" id="waste-pile"></div>
-                        </div>
-                        <div class="solitaire-foundations">
-                            <div class="pile foundation" data-foundation-index="0"></div>
-                            <div class="pile foundation" data-foundation-index="1"></div>
-                            <div class="pile foundation" data-foundation-index="2"></div>
-                            <div class="pile foundation" data-foundation-index="3"></div>
-                        </div>
-                    </div>
-                    <div class="solitaire-tableau-piles">
-                        <div class="pile tableau" data-tableau-index="0"></div>
-                        <div class="pile tableau" data-tableau-index="1"></div>
-                        <div class="pile tableau" data-tableau-index="2"></div>
-                        <div class="pile tableau" data-tableau-index="3"></div>
-                        <div class="pile tableau" data-tableau-index="4"></div>
-                        <div class="pile tableau" data-tableau-index="5"></div>
-                        <div class="pile tableau" data-tableau-index="6"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+.weather-widget-header {
+    background: #000080;
+    color: white;
+    padding: 2px 5px;
+    margin: -8px -8px 5px -8px;
+    font-weight: bold;
+    text-align: center;
+    font-size: 12px;
+}
 
-    <div class="modal" id="weatherModal">
-        <div class="modal-content weather-modal-content">
-            <div class="modal-header">
-                <span>Weather</span>
-                <button class="modal-close" id="closeWeather">×</button>
-            </div>
-             <div class="modal-body weather-app">
-               <div id="weatherLoading" class="loading">Loading weather data...</div>
-                <div id="weatherContent" style="display: none;">
-                    <div class="current-weather">
-                        <div class="current-location" id="currentLocation"></div>
-                        <div class="current-temp" id="currentTemp"></div>
-                        <div class="current-condition" id="currentCondition"></div>
-                        <div id="currentWeatherIcon" class="weather-icon"></div>
-                    </div>
-                    </div>
-            </div>
-        </div>
-    </div>
+.weather-current {
+    text-align: center;
+    margin-bottom: 8px;
+    padding-bottom: 5px;
+    border-bottom: 1px solid #808080;
+}
 
-    <div class="modal" id="adminModal">
-        <div class="modal-content">
-             <div class="modal-header">
-                <span>Administrator Access</span>
-                <button class="modal-close" id="closeAdmin">×</button>
-            </div>
-            <div class="modal-body">
-                <p>Enter Admin Password:</p>
-                <input type="password" id="adminPassword">
-                <div class="button-group">
-                    <button class="button" id="adminCancel">Cancel</button>
-                    <button class="button" id="adminOk">OK</button>
-                </div>
-            </div>
-        </div>
-    </div>
+.weather-location {
+    font-weight: bold;
+    margin-bottom: 3px;
+}
+
+.weather-temp {
+    font-size: 14px;
+    font-weight: bold;
+    margin-bottom: 2px;
+}
+
+.weather-condition {
+    font-size: 10px;
+    text-transform: capitalize;
+}
+
+.weather-forecast {
+    margin-top: 5px;
+}
+
+.weather-forecast-title {
+    font-weight: bold;
+    margin-bottom: 3px;
+    font-size: 10px;
+}
+
+.weather-day {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1px 0;
+    font-size: 10px;
+    border-bottom: 1px dotted #c0c0c0;
+}
+
+.weather-day:last-child {
+    border-bottom: none;
+}
+
+.weather-day-name {
+    font-weight: bold;
+    width: 35px;
+}
+
+.weather-day-condition {
+    flex: 1;
+    text-align: center;
+    font-size: 9px;
+}
+
+.weather-day-temps {
+    text-align: right;
+    width: 45px;
+}
+
+.weather-loading {
+    text-align: center;
+    font-size: 10px;
+    color: #666;
+}
+
+/* ===== TASKBAR ===== */
+.taskbar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 30px;
+    background: #c0c0c0;
+    border-top: 2px solid #ffffff;
+    display: flex;
+    align-items: center;
+    padding: 2px;
+    z-index: 2000;
+}
+
+.taskbar-left {
+    display: flex;
+    align-items: center;
+}
+
+.start-button {
+    height: 26px;
+    padding: 0 10px;
+    background: #c0c0c0;
+    border: 1px outset #fff;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    font-size: 11px;
+    gap: 5px;
+}
+
+.start-button:active {
+    border-style: inset;
+}
+
+.running-apps {
+    display: flex;
+    gap: 2px;
+    margin-left: 5px;
+    height: 100%;
+}
+
+.app-button {
+    height: 24px;
+    border: 1px outset #fff;
+    padding: 0 10px;
+    min-width: 100px;
+    max-width: 150px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background: #c0c0c0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    cursor: pointer;
+    font-size: 11px;
+}
+
+.app-button:active {
+    border-style: inset;
+}
+
+.system-tray {
+    border: 1px inset #808080;
+    padding: 2px 5px;
+    margin-right: 2px;
+}
+
+/* ===== ENHANCED START MENU ===== */
+.start-menu {
+    position: fixed;
+    background: #c0c0c0;
+    border: 1px outset #fff;
+    box-shadow: 2px 2px 5px rgba(0,0,0,0.5);
+    display: none;
+    z-index: 2001;
+    padding: 2px;
+    bottom: 32px;
+    left: 2px;
+    width: 250px;
+    max-height: calc(100vh - 60px);
+    overflow-y: auto;
+}
+
+.start-menu-header {
+    background: linear-gradient(90deg, #000080 0%, #0000ff 100%);
+    color: white;
+    padding: 8px 12px;
+    font-weight: bold;
+    font-size: 12px;
+    margin: -2px -2px 2px -2px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.start-menu-section {
+    border-bottom: 1px solid #808080;
+    margin-bottom: 2px;
+    padding-bottom: 2px;
+}
+
+.start-menu-section:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.start-menu-item {
+    padding: 4px 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+}
+
+.start-menu-item:hover {
+    background: #000080;
+    color: white;
+}
+
+.start-menu-item img {
+    width: 16px;
+    height: 16px;
+}
+
+.context-menu {
+    position: fixed;
+    background: #c0c0c0;
+    border: 1px outset #fff;
+    box-shadow: 2px 2px 5px rgba(0,0,0,0.5);
+    display: none;
+    z-index: 2001;
+    padding: 2px;
+    min-width: 140px;
+}
+
+.context-menu-item {
+    padding: 6px 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.context-menu-item:hover {
+    background: #000080;
+    color: white;
+}
+
+/* ===== MODALS (WINDOWS) ===== */
+.modal {
+    position: fixed;
+    top: 50px;
+    left: 100px;
+    display: none;
+    z-index: 1001;
+}
+
+.modal-content {
+    background: #c0c0c0;
+    border: 1px outset #fff;
+    box-shadow: 2px 2px 5px rgba(0,0,0,0.5);
+    display: flex;
+    flex-direction: column;
+}
+
+.modal-header {
+    background: #000080;
+    color: white;
+    padding: 2px 5px;
+    font-weight: bold;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: move;
+}
+
+.modal-close {
+    background: #c0c0c0;
+    border: 1px outset #fff;
+    width: 16px;
+    height: 14px;
+    font-size: 10px;
+    cursor: pointer;
+    text-align: center;
+    line-height: 12px;
+}
+
+.modal-close:active {
+    border-style: inset;
+}
+
+.modal-body {
+    padding: 10px;
+}
+
+/* Form Elements */
+.form-group {
+    margin-bottom: 10px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 2px;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 2px;
+    border: 1px inset #808080;
+    background: white;
+}
+
+.button-group {
+    display: flex;
+    gap: 5px;
+    justify-content: flex-end;
+    margin-top: 10px;
+}
+
+.button {
+    padding: 4px 12px;
+    background: #c0c0c0;
+    border: 1px outset #fff;
+    cursor: pointer;
+}
+
+.button:active {
+    border-style: inset;
+}
+
+/* ===== SOLITAIRE GAME STYLES ===== */
+.solitaire-modal-content {
+    width: 620px;
+    height: 500px;
+}
+
+.solitaire-body {
+    background-color: #008000;
+    padding: 10px;
+    height: calc(100% - 20px);
+    display: flex;
+    flex-direction: column;
+}
+
+#solitaire-game-board {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.solitaire-top-piles {
+    display: flex;
+    justify-content: space-between;
+}
+
+.solitaire-stock-waste {
+    display: flex;
+    gap: 10px;
+}
+
+.solitaire-foundations {
+    display: flex;
+    gap: 10px;
+}
+
+.solitaire-tableau-piles {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
+.pile {
+    width: 80px;
+    height: 110px;
+    border: 1px solid #3c7f3c;
+    position: relative;
+    border-radius: 5px;
+    background: rgba(0,0,0,0.1);
+}
+
+.card {
+    width: 80px;
+    height: 110px;
+    position: absolute;
+    border: 1px solid black;
+    border-radius: 5px;
+    background-color: white;
+    cursor: pointer;
+    box-shadow: 1px 1px 3px rgba(0,0,0,0.3);
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+}
+
+.card.back {
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 110"><rect width="80" height="110" fill="%23800080"/><rect x="5" y="5" width="70" height="100" fill="none" stroke="%23FFD700" stroke-width="2"/></svg>');
+}
+
+/* ===== WEATHER APP STYLES ===== */
+.weather-modal-content {
+    width: 280px;
+}
+
+.weather-app .loading {
+    padding: 20px;
+    text-align: center;
+}
+
+.weather-app .current-weather {
+    text-align: center;
+    padding: 10px;
+    border-bottom: 1px solid #808080;
+    margin-bottom: 5px;
+}
+
+.weather-app .current-location {
+    font-weight: bold;
+    font-size: 12px;
+}
+
+.weather-app .current-temp {
+    font-size: 28px;
+    font-weight: bold;
+    margin: 5px 0;
+}
+
+.weather-app .current-condition {
+    text-transform: capitalize;
+}
+
+.weather-app .weather-icon {
+    font-size: 24px;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .desktop-icon {
+        width: 60px;
+        height: 60px;
+    }
     
-    <div class="modal" id="iconModal">
-        <div class="modal-content">
-             <div class="modal-header">
-                <span id="modalTitle">Edit Icon</span>
-                <button class="modal-close" id="closeIconModal">×</button>
-            </div>
-            <div class="modal-body">
-                <div class="form-group">
-                    <label for="iconName">Name:</label>
-                    <input type="text" id="iconName">
-                </div>
-                <div class="form-group">
-                    <label for="iconUrl">URL:</label>
-                    <input type="text" id="iconUrl">
-                </div>
-                <div class="button-group">
-                    <button class="button" id="iconCancel">Cancel</button>
-                    <button class="button" id="iconOk">OK</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <script src="script.js"></script>
-</body>
-</html>
+    .desktop-icon img {
+        width: 32px;
+        height: 32px;
+    }
+    
+    .modal-content {
+        max-width: 90vw;
+    }
+    
+    .solitaire-modal-content {
+        width: 90vw;
+        height: 80vh;
+    }
+    
+    .pile {
+        width: 60px;
+        height: 85px;
+    }
+    
+    .card {
+        width: 60px;
+        height: 85px;
+    }
+}
