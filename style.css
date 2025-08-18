@@ -54,18 +54,19 @@ body {
 
 /* ===== DESKTOP WEATHER TEXT ===== */
 .weather-text {
-    position: absolute;
+    position: fixed;
     top: 10px;
     right: 10px;
     color: white;
     text-shadow: 1px 1px 2px black;
     font-family: 'MS Sans Serif', sans-serif;
-    font-size: 11px;
-    line-height: 1.3;
+    font-size: 19px;
+    line-height: 1.4;
     cursor: move;
     user-select: none;
     text-align: left;
     white-space: nowrap;
+    z-index: 100;
 }
 
 .weather-location {
