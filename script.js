@@ -31,12 +31,43 @@ document.addEventListener('DOMContentLoaded', function() {
         fetchWeatherData();
         setInterval(fetchWeatherData, 600000);
         loadInitialIcons();
-        autoArrangeIcons();
-        window.addEventListener('resize', autoArrangeIcons);
-    } catch (error) {
-        console.error('Initialization error:', error);
-    }
-});
+       function autoArrangeIcons() {
+    const desktop = document.getElementById('desktop');
+    const icons = Array.from(desktop.querySelectorAll('.desktop-icon'));
+    
+    if (icons.length === 0) return;
+    
+    const iconHeight = 85;
+    const iconWidth = 85; 
+    const paddingTop = 10;
+    const paddingLeft = 10;
+    const desktopHeight = desktop.clientHeight;
+    const desktopWidth = desktop.clientWidth;
+    
+    if (desktopHeight <= 0) return;
+    
+    // Calculate how many icons can fit vertically
+    const iconsPerCol = Math.floor((desktopHeight - paddingTop) / iconHeight);
+    if (iconsPerCol <= 0) return;
+    
+    // Calculate how many columns we need
+    const totalCols = Math.ceil(icons.length / iconsPerCol);
+    
+    icons.forEach((icon, index) => {
+        const col = Math.floor(index / iconsPerCol);
+        const row = index % iconsPerCol;
+        
+        const leftPos = paddingLeft + (col * iconWidth);
+        const topPos = paddingTop + (row * iconHeight);
+        
+        // Make sure icons don't go off screen
+        if (leftPos + iconWidth <= desktopWidth - 220) { // Leave space for weather text
+            icon.style.left = leftPos + 'px';
+            icon.style.top = topPos + 'px';
+            icon.style.position = 'absolute';
+        }
+    });
+}
 
 // ===== EVENT LISTENERS SETUP =====
 function setupEventListeners() {
