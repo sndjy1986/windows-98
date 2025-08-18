@@ -4,359 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Windows 98 Desktop</title>
-    <style>
-        /* ===== RESET & BASE STYLES ===== */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'MS Sans Serif', sans-serif;
-            font-size: 11px;
-            background: #008080;
-            height: 100vh;
-            overflow: hidden;
-            cursor: default;
-            user-select: none;
-        }
-
-        /* ===== DESKTOP & ICONS ===== */
-        .desktop {
-            position: relative;
-            width: 100vw;
-            height: calc(100vh - 30px);
-            padding: 10px;
-        }
-
-        .desktop-icon {
-            position: absolute;
-            width: 75px;
-            height: 75px;
-            padding: 5px;
-            text-align: center;
-            color: white;
-            text-shadow: 1px 1px 1px black;
-            cursor: pointer;
-        }
-
-        .desktop-icon img {
-            width: 48px;
-            height: 48px;
-            display: block;
-            margin: 0 auto 5px;
-        }
-
-        .desktop-icon span {
-            display: block;
-            font-size: 11px;
-            word-wrap: break-word;
-        }
-
-        .desktop-icon:hover {
-            background: rgba(0,0,128,0.3);
-            border: 1px dotted #fff;
-        }
-
-        /* ===== DESKTOP WEATHER TEXT ===== */
-        .weather-text {
-            position: fixed !important;
-            top: 10px !important;
-            right: 10px !important;
-            left: auto !important;
-            color: white;
-            text-shadow: 1px 1px 2px black;
-            font-family: 'MS Sans Serif', sans-serif;
-            font-size: 11px;
-            line-height: 1.4;
-            cursor: move;
-            user-select: none;
-            text-align: left;
-            white-space: nowrap;
-            z-index: 100;
-        }
-
-        /* ===== TASKBAR ===== */
-        .taskbar {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 30px;
-            background: #c0c0c0;
-            border-top: 2px solid #ffffff;
-            display: flex;
-            align-items: center;
-            padding: 2px;
-            z-index: 2000;
-        }
-
-        .taskbar-left {
-            display: flex;
-            align-items: center;
-        }
-
-        .start-button {
-            height: 26px;
-            padding: 0 10px;
-            background: #c0c0c0;
-            border: 1px outset #fff;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            cursor: pointer;
-            font-size: 11px;
-            gap: 5px;
-        }
-
-        .start-button:active {
-            border-style: inset;
-        }
-
-        .running-apps {
-            display: flex;
-            gap: 2px;
-            margin-left: 5px;
-            height: 100%;
-        }
-
-        .app-button {
-            height: 24px;
-            border: 1px outset #fff;
-            padding: 0 10px;
-            min-width: 100px;
-            max-width: 150px;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            background: #c0c0c0;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            cursor: pointer;
-            font-size: 11px;
-        }
-
-        .app-button:active {
-            border-style: inset;
-        }
-
-        .system-tray {
-            border: 1px inset #808080;
-            padding: 2px 5px;
-            margin-right: 2px;
-        }
-
-        /* ===== START MENU ===== */
-        .start-menu {
-            position: fixed;
-            background: #c0c0c0;
-            border: 1px outset #fff;
-            box-shadow: 2px 2px 5px rgba(0,0,0,0.5);
-            display: none;
-            z-index: 2001;
-            padding: 2px;
-            bottom: 32px;
-            left: 2px;
-            width: 250px;
-            max-height: calc(100vh - 60px);
-            overflow-y: auto;
-        }
-
-        .start-menu-header {
-            background: linear-gradient(90deg, #000080 0%, #0000ff 100%);
-            color: white;
-            padding: 8px 12px;
-            font-weight: bold;
-            font-size: 12px;
-            margin: -2px -2px 2px -2px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .start-menu-section {
-            border-bottom: 1px solid #808080;
-            margin-bottom: 2px;
-            padding-bottom: 2px;
-        }
-
-        .start-menu-section:last-child {
-            border-bottom: none;
-            margin-bottom: 0;
-            padding-bottom: 0;
-        }
-
-        .start-menu-item {
-            padding: 4px 12px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 11px;
-        }
-
-        .start-menu-item:hover {
-            background: #000080;
-            color: white;
-        }
-
-        .start-menu-item img {
-            width: 16px;
-            height: 16px;
-        }
-
-        .context-menu {
-            position: fixed;
-            background: #c0c0c0;
-            border: 1px outset #fff;
-            box-shadow: 2px 2px 5px rgba(0,0,0,0.5);
-            display: none;
-            z-index: 2001;
-            padding: 2px;
-            min-width: 140px;
-        }
-
-        .context-menu-item {
-            padding: 6px 12px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .context-menu-item:hover {
-            background: #000080;
-            color: white;
-        }
-
-        /* ===== MODALS ===== */
-        .modal {
-            position: fixed;
-            top: 50px;
-            left: 100px;
-            display: none;
-            z-index: 1001;
-        }
-
-        .modal-content {
-            background: #c0c0c0;
-            border: 1px outset #fff;
-            box-shadow: 2px 2px 5px rgba(0,0,0,0.5);
-            display: flex;
-            flex-direction: column;
-        }
-
-        .modal-header {
-            background: #000080;
-            color: white;
-            padding: 2px 5px;
-            font-weight: bold;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            cursor: move;
-        }
-
-        .modal-close {
-            background: #c0c0c0;
-            border: 1px outset #fff;
-            width: 16px;
-            height: 14px;
-            font-size: 10px;
-            cursor: pointer;
-            text-align: center;
-            line-height: 12px;
-        }
-
-        .modal-close:active {
-            border-style: inset;
-        }
-
-        .modal-body {
-            padding: 10px;
-        }
-
-        /* Form Elements */
-        .form-group {
-            margin-bottom: 10px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 2px;
-        }
-
-        .form-group input {
-            width: 100%;
-            padding: 2px;
-            border: 1px inset #808080;
-            background: white;
-        }
-
-        .button-group {
-            display: flex;
-            gap: 5px;
-            justify-content: flex-end;
-            margin-top: 10px;
-        }
-
-        .button {
-            padding: 4px 12px;
-            background: #c0c0c0;
-            border: 1px outset #fff;
-            cursor: pointer;
-        }
-
-        .button:active {
-            border-style: inset;
-        }
-
-        /* ===== SOLITAIRE STYLES ===== */
-        .solitaire-modal-content {
-            width: 620px;
-            height: 500px;
-        }
-
-        .solitaire-body {
-            background-color: #008000;
-            padding: 10px;
-            height: calc(100% - 20px);
-        }
-
-        /* ===== WEATHER STYLES ===== */
-        .weather-modal-content {
-            width: 280px;
-        }
-
-        .weather-app .loading {
-            padding: 20px;
-            text-align: center;
-        }
-
-        .weather-app .current-weather {
-            text-align: center;
-            padding: 10px;
-        }
-
-        .weather-app .current-temp {
-            font-size: 28px;
-            font-weight: bold;
-            margin: 5px 0;
-        }
-    </style>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="desktop" id="desktop">
         <div class="weather-text" id="weatherText">
-            Anderson, SC<br>
-            Temp: 72°/45°<br>
-            partly cloudy<br><br>
-            3 Day Forecast<br>
-            Tue: Sunny 75°/50°<br>
-            Wed: Rain 68°/42°<br>
-            Thu: Clear 78°/52°
+            <div class="weather-loading">Loading...</div>
         </div>
     </div>
 
@@ -393,6 +46,18 @@
                 <img src="https://win98icons.alexmeub.com/icons/png/settings_gear-0.png" alt="Settings" width="16" height="16">
                 <span>Settings</span>
             </div>
+            <div class="start-menu-item" id="startMenuFind">
+                <img src="https://win98icons.alexmeub.com/icons/png/search_web-1.png" alt="Find" width="16" height="16">
+                <span>Find</span>
+            </div>
+            <div class="start-menu-item" id="startMenuHelp">
+                <img src="https://win98icons.alexmeub.com/icons/png/help_book_small-0.png" alt="Help" width="16" height="16">
+                <span>Help</span>
+            </div>
+            <div class="start-menu-item" id="startMenuRun">
+                <img src="https://win98icons.alexmeub.com/icons/png/application_hourglass-4.png" alt="Run" width="16" height="16">
+                <span>Run...</span>
+            </div>
         </div>
 
         <div class="start-menu-section">
@@ -411,6 +76,14 @@
                 <img src="https://win98icons.alexmeub.com/icons/png/template_empty-1.png" alt="Add Icon" width="16" height="16">
                 <span>Add New Icon</span>
             </div>
+            <div class="start-menu-item" id="startMenuExport">
+                <img src="https://win98icons.alexmeub.com/icons/png/save_all-0.png" alt="Export" width="16" height="16">
+                <span>Export Config</span>
+            </div>
+            <div class="start-menu-item" id="startMenuImport">
+                <img src="https://win98icons.alexmeub.com/icons/png/directory_open_file_mydocs-2.png" alt="Import" width="16" height="16">
+                <span>Import Config</span>
+            </div>
         </div>
 
         <div class="start-menu-section">
@@ -425,8 +98,9 @@
         <div class="context-menu-item" id="contextMenuAdd">Add New Icon</div>
         <div class="context-menu-item" id="contextMenuEdit">Edit Icon</div>
         <div class="context-menu-item" id="contextMenuDelete">Delete Icon</div>
-        <div class="context-menu-item" id="contextMenuArrange">Auto Arrange</div>
     </div>
+
+    <input type="file" id="importFile" accept=".json" style="display: none;">
 
     <div class="modal" id="solitaireModal">
         <div class="modal-content solitaire-modal-content">
@@ -435,8 +109,28 @@
                 <button class="modal-close" id="closeSolitaire">×</button>
             </div>
             <div class="modal-body solitaire-body">
-                <div style="text-align: center; padding: 50px;">
-                    Solitaire Game (Placeholder)
+                 <div id="solitaire-game-board">
+                    <div class="solitaire-top-piles">
+                        <div class="solitaire-stock-waste">
+                            <div class="pile stock" id="stock-pile"></div>
+                            <div class="pile waste" id="waste-pile"></div>
+                        </div>
+                        <div class="solitaire-foundations">
+                            <div class="pile foundation" data-foundation-index="0"></div>
+                            <div class="pile foundation" data-foundation-index="1"></div>
+                            <div class="pile foundation" data-foundation-index="2"></div>
+                            <div class="pile foundation" data-foundation-index="3"></div>
+                        </div>
+                    </div>
+                    <div class="solitaire-tableau-piles">
+                        <div class="pile tableau" data-tableau-index="0"></div>
+                        <div class="pile tableau" data-tableau-index="1"></div>
+                        <div class="pile tableau" data-tableau-index="2"></div>
+                        <div class="pile tableau" data-tableau-index="3"></div>
+                        <div class="pile tableau" data-tableau-index="4"></div>
+                        <div class="pile tableau" data-tableau-index="5"></div>
+                        <div class="pile tableau" data-tableau-index="6"></div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -448,19 +142,23 @@
                 <span>Weather</span>
                 <button class="modal-close" id="closeWeather">×</button>
             </div>
-            <div class="modal-body weather-app">
-                <div class="current-weather">
-                    <div>Anderson, SC</div>
-                    <div class="current-temp">72°F</div>
-                    <div>Partly Cloudy</div>
-                </div>
+             <div class="modal-body weather-app">
+               <div id="weatherLoading" class="loading">Loading weather data...</div>
+                <div id="weatherContent" style="display: none;">
+                    <div class="current-weather">
+                        <div class="current-location" id="currentLocation"></div>
+                        <div class="current-temp" id="currentTemp"></div>
+                        <div class="current-condition" id="currentCondition"></div>
+                        <div id="currentWeatherIcon" class="weather-icon"></div>
+                    </div>
+                    </div>
             </div>
         </div>
     </div>
 
     <div class="modal" id="adminModal">
         <div class="modal-content">
-            <div class="modal-header">
+             <div class="modal-header">
                 <span>Administrator Access</span>
                 <button class="modal-close" id="closeAdmin">×</button>
             </div>
@@ -474,10 +172,10 @@
             </div>
         </div>
     </div>
-
+    
     <div class="modal" id="iconModal">
         <div class="modal-content">
-            <div class="modal-header">
+             <div class="modal-header">
                 <span id="modalTitle">Edit Icon</span>
                 <button class="modal-close" id="closeIconModal">×</button>
             </div>
@@ -497,3 +195,7 @@
             </div>
         </div>
     </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
