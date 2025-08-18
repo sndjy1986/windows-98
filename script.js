@@ -198,7 +198,14 @@ function showContextMenu(e) {
 
 // ===== ICON MANAGEMENT =====
 function loadInitialIcons() {
-    document.getElementById('desktop').innerHTML = '';
+    // Don't clear the entire desktop - preserve the weather text
+    const desktop = document.getElementById('desktop');
+    const weatherText = document.getElementById('weatherText');
+    
+    // Remove only icon elements, not the weather text
+    const icons = desktop.querySelectorAll('.desktop-icon');
+    icons.forEach(icon => icon.remove());
+    
     const initialIcons = [
         // From your paste.txt file
         { name: 'Windows Home', url: 'http://windows98.sndjy.us', id: 'windows-home', iconUrl: 'https://icons.duckduckgo.com/ip3/sndjy.us.org.ico' },
