@@ -54,9 +54,10 @@ body {
 
 /* ===== DESKTOP WEATHER TEXT ===== */
 .weather-text {
-    position: fixed;
-    top: 10px;
-    right: 10px;
+    position: fixed !important;
+    top: 10px !important;
+    right: 10px !important;
+    left: auto !important;
     color: white;
     text-shadow: 1px 1px 2px black;
     font-family: 'MS Sans Serif', sans-serif;
