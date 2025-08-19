@@ -91,16 +91,19 @@ body {
     font-weight: bold;
     font-size: 11px;
     margin-bottom: 3px;
+    text-transform: capitalize;
 }
 
 .weather-day {
     font-size: 10px;
     margin-bottom: 1px;
+    text-transform: capitalize;
 }
 
 .weather-loading {
     font-size: 10px;
     color: #ccc;
+    text-transform: capitalize;
 }
 
 /* ===== TASKBAR ===== */
